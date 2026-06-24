@@ -1,0 +1,38 @@
+name: standard
+description: 标准变更——先定规格，再实现
+
+artifacts:
+  - id: proposal
+    template: changes/proposal.md
+    requires: []
+    instruction: |
+      描述变更动机和范围。
+      必须列出新增和变更的能力。
+      标注破坏性变更。
+
+  - id: specs
+    template: changes/delta-spec.md
+    requires: [proposal]
+    instruction: |
+      用"新增/修改/移除"表达增量变更。
+      每个需求至少一个场景。
+      场景必须用"前置/当/则"格式。
+      禁止在规格中写实现细节。
+      修改需求必须包含完整更新后内容。
+
+  - id: tasks
+    template: changes/tasks.md
+    requires: [proposal, specs]
+    instruction: |
+      根据规格分解任务。
+      每个任务对应一个可验证的产出。
+      按执行顺序排列。
+      相关任务分组，用编号标记。
+
+apply:
+  requires: [tasks]
+  instruction: |
+    读取 proposal、specs 和 tasks。
+    逐个实现任务，完成后标记 [x]。
+    实现必须匹配增量规格中的场景。
+    遇到阻塞立即暂停并报告。

@@ -1,0 +1,27 @@
+name: hotfix
+description: 紧急修复——跳过设计，直达实现
+
+artifacts:
+  - id: proposal
+    template: changes/proposal.md
+    requires: []
+    instruction: |
+      描述问题、影响范围、修复方案。
+      保持简洁，1页以内。
+      不需要列出能力变更。
+
+  - id: tasks
+    template: changes/tasks.md
+    requires: [proposal]
+    instruction: |
+      分解为 checkbox 任务。
+      每个任务必须可在一个会话内完成。
+      按执行顺序排列。
+      任务数量控制在 3-5 个。
+
+apply:
+  requires: [tasks]
+  instruction: |
+    读取 proposal 和 tasks。
+    逐个实现任务，完成后标记 [x]。
+    遇到阻塞立即暂停并报告。

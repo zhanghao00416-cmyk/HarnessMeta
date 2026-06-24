@@ -1,0 +1,116 @@
+# =============================================
+# harness-meta 项目配置
+# =============================================
+# 此文件是项目的单一数据源。
+# harness-init 读取此文件生成项目骨架。
+# 后续 Skill 从此文件获取上下文和约束。
+
+# ─── 项目基本信息 ───
+project:
+  name: my-project
+  description: 一个示例项目的配置模板
+  language: zh                          # 文档语言：zh / en
+  spec_lifecycle: living-spec           # flow-back / flow-forward / living-spec
+
+# ─── 架构宪法 ───
+# 生成到 ARCHITECTURE.md 的不可协商原则
+constitution:
+  principles:
+    - "分层依赖方向：api → domain → services → infra，禁止反向依赖"
+    - "所有外部服务通过提供者抽象访问，禁止在业务层直接调用第三方 SDK"
+    - "配置项全部从环境变量读取，禁止硬编码"
+  rules:
+    - name: "单一职责"
+      description: "每个模块只负责一个明确的功能域"
+    - name: "错误边界"
+      description: "每层只处理自己能处理的错误，未知错误向上抛出"
+    - name: "接口契约"
+      description: "对外暴露的接口必须有明确的输入/输出类型定义"
+
+# ─── 功能清单 ───
+# 首次生成时，每个功能对应一个工单
+# clarify 阶段会补全 behavior 和 docs 字段
+features:
+  - id: F01
+    title: 项目骨架
+    dependencies: []
+    schema: standard                    # 使用哪个变更 schema
+    # behavior: |                       # ← clarify 阶段填写
+    #   创建项目目录结构...
+    # docs:                             # ← clarify 阶段填写
+    #   - docs/specs/core/spec.md
+    # verify_command: "npm run build"   # ← clarify 阶段填写
+
+  - id: F02
+    title: 数据模型
+    dependencies: [F01]
+    schema: standard
+
+  - id: F03
+    title: 错误中间件
+    dependencies: [F01]
+    schema: standard
+
+  - id: F04
+    title: LLM 网关
+    dependencies: [F01, F03]
+    schema: feature
+
+  - id: F05
+    title: 向量存储
+    dependencies: [F01]
+    schema: feature
+
+# ─── 部署配置 ───
+# harness-specify-arch 读取此段生成 DEPLOYMENT.md
+deployment:
+  type: docker-compose               # docker-compose / k8s / standalone
+  compose_file: docker-compose.yml   # Compose 文件路径
+  services:
+    - name: app
+      port: 8000
+      healthcheck: /health
+      depends_on: [redis, db]
+    - name: redis
+      port: 6379
+    - name: db
+      port: 5432
+  build:
+    context: .
+    dockerfile: Dockerfile
+
+# ─── 变更管理 ───
+# 后续代码变更的配置
+change_management:
+  default_schema: hotfix                # 默认变更类型：hotfix / standard / feature
+  specs_dir: docs/specs                 # 主规格目录
+  changes_dir: changes                  # 活跃变更目录
+  archive_dir: changes/archive          # 归档目录
+
+# ─── 验证命令 ───
+# 填入 AGENTS.md 和工单的健康检查命令
+verify_commands:
+  health_check: "npm run lint && npm test"
+  architecture_check: "npm run check:arch"
+
+# ─── 项目上下文 ───
+# 传递给所有 artifact 生成指令的背景信息
+context: |
+  技术栈：Python 3.12, FastAPI, SQLAlchemy, Redis, Qdrant
+  包管理器：uv / pip
+  文档语言：中文
+  运行平台：macOS, Linux, Windows
+  AI 组件：OpenAI API / 本地模型
+
+# ─── Artifact 生成规则 ───
+# 按 artifact 类型配置的额外约束
+rules:
+  specs:
+    - "场景必须使用前置/当/则格式"
+    - "禁止在规格中写实现细节（类名、函数名、库名）"
+  tasks:
+    - "每个任务必须可在一个会话内完成"
+    - "任务按执行顺序排列"
+  design:
+    - "仅跨模块、新依赖、安全复杂度时才创建"
+    - "记录备选方案和否决原因"
