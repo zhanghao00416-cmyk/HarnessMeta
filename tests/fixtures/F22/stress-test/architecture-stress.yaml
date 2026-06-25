@@ -1,0 +1,340 @@
+artifact:
+  id: order-architecture
+  type: architecture
+  title: 电商订单系统架构规格
+  domain: order
+  status: reviewed
+  version: 1.0.0
+overview: 订单系统采用微服务架构，包含订单服务、支付服务、库存服务、物流服务。服务间通过消息队列异步通信。
+constraints:
+- id: CON-ORD-001
+  type: architecture
+  title: 分层约束
+  rule: Service 层不得直接访问数据库，必须通过 Repository 接口
+  severity: info
+  verification: code_review
+- id: CON-ORD-002
+  type: architecture
+  title: 依赖方向
+  rule: 上层可以依赖下层，下层不得依赖上层
+  severity: info
+  verification: code_review
+- id: CON-ORD-003
+  type: security
+  title: 认证约束
+  rule: 所有 API 端点必须通过 JWT Token 认证
+  severity: block
+  verification: code_review
+- id: CON-ORD-004
+  type: security
+  title: 授权约束
+  rule: 非管理员用户不得访问管理接口
+  severity: info
+  verification: automated_test
+- id: CON-ORD-005
+  type: data
+  title: 数据一致性
+  rule: 订单状态变更必须在事务中完成
+  severity: block
+  verification: code_review
+- id: CON-ORD-006
+  type: data
+  title: 数据隔离
+  rule: 多租户数据必须通过 tenant_id 隔离
+  severity: block
+  verification: code_review
+- id: CON-ORD-007
+  type: reliability
+  title: 消息可靠性
+  rule: 订单事件必须持久化到消息队列后才能确认
+  severity: warning
+  verification: code_review
+- id: CON-ORD-008
+  type: reliability
+  title: 幂等约束
+  rule: 支付回调接口必须支持幂等处理
+  severity: info
+  verification: code_review
+- id: CON-ORD-009
+  type: performance
+  title: 响应时间
+  rule: 订单查询接口 P95 响应时间 < 200ms
+  severity: warning
+  verification: automated_test
+- id: CON-ORD-010
+  type: performance
+  title: 并发约束
+  rule: 下单接口支持 5000 TPS 并发
+  severity: warning
+  verification: code_review
+- id: CON-ORD-011
+  type: compliance
+  title: 日志约束
+  rule: 所有订单操作必须记录审计日志
+  severity: info
+  verification: code_review
+- id: CON-ORD-012
+  type: compliance
+  title: 数据保留
+  rule: 订单数据必须保留至少 5 年
+  severity: info
+  verification: automated_test
+- id: CON-ORD-013
+  type: testing
+  title: 测试覆盖
+  rule: Service 层单元测试覆盖率 > 80%
+  severity: info
+  verification: static_analysis
+- id: CON-ORD-014
+  type: testing
+  title: 集成测试
+  rule: 支付流程必须通过集成测试
+  severity: block
+  verification: static_analysis
+- id: CON-ORD-015
+  type: architecture
+  title: 接口约束
+  rule: 所有 Service 方法必须有类型注解
+  severity: warning
+  verification: code_review
+- id: CON-ORD-016
+  type: security
+  title: 输入校验
+  rule: 所有用户输入必须经过 Pydantic 校验
+  severity: block
+  verification: code_review
+- id: CON-ORD-017
+  type: data
+  title: 索引约束
+  rule: order_id 和 user_id 必须建立联合索引
+  severity: info
+  verification: static_analysis
+- id: CON-ORD-018
+  type: reliability
+  title: 超时约束
+  rule: 外部服务调用超时时间 < 5 秒
+  severity: warning
+  verification: static_analysis
+- id: CON-ORD-019
+  type: performance
+  title: 缓存约束
+  rule: 热点商品信息必须缓存，过期时间 10 分钟
+  severity: warning
+  verification: static_analysis
+- id: CON-ORD-020
+  type: compliance
+  title: 隐私约束
+  rule: 用户手机号在日志中必须脱敏
+  severity: info
+  verification: code_review
+- id: CON-ORD-021
+  type: architecture
+  title: 分层约束（扩展2）
+  rule: Service 层不得直接访问数据库，必须通过 Repository 接口，补充规则2
+  severity: info
+  verification: automated_test
+- id: CON-ORD-022
+  type: architecture
+  title: 依赖方向（扩展2）
+  rule: 上层可以依赖下层，下层不得依赖上层，补充规则2
+  severity: info
+  verification: code_review
+- id: CON-ORD-023
+  type: security
+  title: 认证约束（扩展2）
+  rule: 所有 API 端点必须通过 JWT Token 认证，补充规则2
+  severity: block
+  verification: static_analysis
+- id: CON-ORD-024
+  type: security
+  title: 授权约束（扩展2）
+  rule: 非管理员用户不得访问管理接口，补充规则2
+  severity: info
+  verification: static_analysis
+- id: CON-ORD-025
+  type: data
+  title: 数据一致性（扩展2）
+  rule: 订单状态变更必须在事务中完成，补充规则2
+  severity: block
+  verification: code_review
+- id: CON-ORD-026
+  type: data
+  title: 数据隔离（扩展2）
+  rule: 多租户数据必须通过 tenant_id 隔离，补充规则2
+  severity: block
+  verification: code_review
+- id: CON-ORD-027
+  type: reliability
+  title: 消息可靠性（扩展2）
+  rule: 订单事件必须持久化到消息队列后才能确认，补充规则2
+  severity: info
+  verification: static_analysis
+- id: CON-ORD-028
+  type: reliability
+  title: 幂等约束（扩展2）
+  rule: 支付回调接口必须支持幂等处理，补充规则2
+  severity: block
+  verification: static_analysis
+- id: CON-ORD-029
+  type: performance
+  title: 响应时间（扩展2）
+  rule: 订单查询接口 P95 响应时间 < 200ms，补充规则2
+  severity: block
+  verification: static_analysis
+- id: CON-ORD-030
+  type: performance
+  title: 并发约束（扩展2）
+  rule: 下单接口支持 5000 TPS 并发，补充规则2
+  severity: warning
+  verification: code_review
+- id: CON-ORD-031
+  type: compliance
+  title: 日志约束（扩展2）
+  rule: 所有订单操作必须记录审计日志，补充规则2
+  severity: block
+  verification: static_analysis
+- id: CON-ORD-032
+  type: compliance
+  title: 数据保留（扩展2）
+  rule: 订单数据必须保留至少 5 年，补充规则2
+  severity: info
+  verification: code_review
+- id: CON-ORD-033
+  type: testing
+  title: 测试覆盖（扩展2）
+  rule: Service 层单元测试覆盖率 > 80%，补充规则2
+  severity: block
+  verification: automated_test
+- id: CON-ORD-034
+  type: testing
+  title: 集成测试（扩展2）
+  rule: 支付流程必须通过集成测试，补充规则2
+  severity: info
+  verification: code_review
+- id: CON-ORD-035
+  type: architecture
+  title: 接口约束（扩展2）
+  rule: 所有 Service 方法必须有类型注解，补充规则2
+  severity: block
+  verification: code_review
+- id: CON-ORD-036
+  type: security
+  title: 输入校验（扩展2）
+  rule: 所有用户输入必须经过 Pydantic 校验，补充规则2
+  severity: block
+  verification: static_analysis
+- id: CON-ORD-037
+  type: data
+  title: 索引约束（扩展2）
+  rule: order_id 和 user_id 必须建立联合索引，补充规则2
+  severity: warning
+  verification: static_analysis
+- id: CON-ORD-038
+  type: reliability
+  title: 超时约束（扩展2）
+  rule: 外部服务调用超时时间 < 5 秒，补充规则2
+  severity: block
+  verification: static_analysis
+- id: CON-ORD-039
+  type: performance
+  title: 缓存约束（扩展2）
+  rule: 热点商品信息必须缓存，过期时间 10 分钟，补充规则2
+  severity: block
+  verification: code_review
+- id: CON-ORD-040
+  type: compliance
+  title: 隐私约束（扩展2）
+  rule: 用户手机号在日志中必须脱敏，补充规则2
+  severity: warning
+  verification: code_review
+decisions:
+- id: ADR-001
+  title: 架构决策 1
+  decision: 使用方案 1 解决架构问题 1
+  status: accepted
+  context: 决策背景 1
+  consequences: 决策后果 1
+- id: ADR-002
+  title: 架构决策 2
+  decision: 使用方案 2 解决架构问题 2
+  status: accepted
+  context: 决策背景 2
+  consequences: 决策后果 2
+- id: ADR-003
+  title: 架构决策 3
+  decision: 使用方案 3 解决架构问题 3
+  status: accepted
+  context: 决策背景 3
+  consequences: 决策后果 3
+- id: ADR-004
+  title: 架构决策 4
+  decision: 使用方案 4 解决架构问题 4
+  status: accepted
+  context: 决策背景 4
+  consequences: 决策后果 4
+- id: ADR-005
+  title: 架构决策 5
+  decision: 使用方案 5 解决架构问题 5
+  status: accepted
+  context: 决策背景 5
+  consequences: 决策后果 5
+- id: ADR-006
+  title: 架构决策 6
+  decision: 使用方案 6 解决架构问题 6
+  status: accepted
+  context: 决策背景 6
+  consequences: 决策后果 6
+- id: ADR-007
+  title: 架构决策 7
+  decision: 使用方案 7 解决架构问题 7
+  status: accepted
+  context: 决策背景 7
+  consequences: 决策后果 7
+- id: ADR-008
+  title: 架构决策 8
+  decision: 使用方案 8 解决架构问题 8
+  status: accepted
+  context: 决策背景 8
+  consequences: 决策后果 8
+- id: ADR-009
+  title: 架构决策 9
+  decision: 使用方案 9 解决架构问题 9
+  status: accepted
+  context: 决策背景 9
+  consequences: 决策后果 9
+- id: ADR-010
+  title: 架构决策 10
+  decision: 使用方案 10 解决架构问题 10
+  status: accepted
+  context: 决策背景 10
+  consequences: 决策后果 10
+- id: ADR-011
+  title: 架构决策 11
+  decision: 使用方案 11 解决架构问题 11
+  status: accepted
+  context: 决策背景 11
+  consequences: 决策后果 11
+- id: ADR-012
+  title: 架构决策 12
+  decision: 使用方案 12 解决架构问题 12
+  status: accepted
+  context: 决策背景 12
+  consequences: 决策后果 12
+- id: ADR-013
+  title: 架构决策 13
+  decision: 使用方案 13 解决架构问题 13
+  status: accepted
+  context: 决策背景 13
+  consequences: 决策后果 13
+- id: ADR-014
+  title: 架构决策 14
+  decision: 使用方案 14 解决架构问题 14
+  status: accepted
+  context: 决策背景 14
+  consequences: 决策后果 14
+- id: ADR-015
+  title: 架构决策 15
+  decision: 使用方案 15 解决架构问题 15
+  status: accepted
+  context: 决策背景 15
+  consequences: 决策后果 15

@@ -1,0 +1,393 @@
+# ============================================================
+# Context Bundle（由 harness-context v2.0 自动生成）
+# ============================================================
+# 输入：task_id = "F22-order-001"
+# 生成时间：2026-06-25T14:30:00+08:00
+# 版本：2.0
+# 来源 Skill：harness-context
+# ============================================================
+
+context_bundle:
+  meta:
+    task_id: "F22-order-001"
+    generated_at: "2026-06-25T14:30:00+08:00"
+    version: "2.0"
+    source_skill: "harness-context"
+    source_task: "tests/fixtures/F22/task.md"
+
+  # ============================================================
+  # Task（步骤 1：直接从 Task artifact 提取）
+  # ============================================================
+  task:
+    id: "F22-order-001"
+    title: "F22 通知推送系统 — 核心服务实现"
+    objective: "实现通知发送核心服务，支持邮件渠道发送和状态追踪。"
+    domain: "notification"
+    status: "active"
+    feature_id: "F22"
+    dependencies:
+      - "F22-specs"
+      - "notification-architecture"
+
+  # ============================================================
+  # Requirements（步骤 2：P1 Resolver — V1 路径）
+  # task.requirement_refs[].requirement_id → Spec.requirements[]
+  # ============================================================
+  requirements:
+    - id: "REQ-NOT-001"
+      title: "用户可以通过邮件接收通知"
+      description: "当系统产生通知事件时，如果用户配置了邮件渠道，系统应该通过 SMTP 将通知内容发送给用户。邮件应包含通知标题、正文和时间戳。"
+      priority: "must"
+      category: "functional"
+      business_value: "邮件是最基础的通知渠道，覆盖所有用户"
+      coverage: "full"
+      source:
+        artifact_id: "F22-specs"
+        file: "tests/fixtures/F22/spec.md"
+        field_path: "spec.requirements[0]"
+      scenarios:
+        - id: "SC-REQ-NOT-001-01"
+          title: "正常邮件发送"
+          given: "用户已配置邮件渠道且验证通过"
+          when: "系统产生一条通知事件"
+          then: "系统通过 SMTP 发送邮件，邮件包含标题、正文和时间戳"
+          acceptance_criteria:
+            - "邮件在 5 秒内送达"
+            - "邮件内容包含通知标题和正文"
+            - "发送成功时记录日志"
+        - id: "SC-REQ-NOT-001-02"
+          title: "邮件发送失败重试"
+          given: "SMTP 服务暂时不可用"
+          when: "系统尝试发送邮件"
+          then: "系统自动重试 3 次，间隔 30 秒；3 次失败后标记为 failed"
+          acceptance_criteria:
+            - "失败后自动重试 3 次"
+            - "重试间隔为 30 秒"
+            - "3 次失败后状态变为 failed"
+
+    - id: "REQ-NOT-002"
+      title: "通知发送状态可追踪"
+      description: "用户可以查看通知的发送状态（pending / sent / failed），并看到失败原因。"
+      priority: "must"
+      category: "functional"
+      business_value: "帮助用户和运维排查通知未送达问题"
+      coverage: "full"
+      source:
+        artifact_id: "F22-specs"
+        file: "tests/fixtures/F22/spec.md"
+        field_path: "spec.requirements[1]"
+      scenarios:
+        - id: "SC-REQ-NOT-002-01"
+          title: "查看发送状态"
+          given: "通知已进入发送队列"
+          when: "用户查询通知状态"
+          then: "返回通知当前状态和失败原因（如有）"
+          acceptance_criteria:
+            - "状态字段包含 pending / sent / failed"
+            - "失败时显示具体失败原因"
+
+    - id: "REQ-NOT-003"
+      title: "支持多渠道扩展（预留）"
+      description: "系统架构应支持未来添加新渠道（如企业微信、钉钉），不需要重写核心发送逻辑。"
+      priority: "should"
+      category: "non_functional"
+      business_value: "降低未来渠道扩展成本"
+      coverage: "partial"
+      source:
+        artifact_id: "F22-specs"
+        file: "tests/fixtures/F22/spec.md"
+        field_path: "spec.requirements[2]"
+      scenarios:
+        - id: "SC-REQ-NOT-003-01"
+          title: "新增渠道"
+          given: "系统已支持邮件渠道"
+          when: "需要新增企业微信渠道"
+          then: "只需实现渠道适配器，不修改核心发送逻辑"
+          acceptance_criteria:
+            - "新增渠道只需实现适配器接口"
+            - "核心 NotificationService 无需修改"
+
+  # ============================================================
+  # Acceptance Criteria（步骤 3：P1 Resolver — V2 路径）
+  # task.validation_steps[].acceptance_criteria_ids[] → Spec.acceptance_criteria[]
+  # ============================================================
+  acceptance_criteria:
+    - id: "AC-NOT-002"
+      description: "SMTP 发送失败时自动重试 3 次"
+      verification_method: "automated_test"
+      source:
+        artifact_id: "F22-specs"
+        file: "tests/fixtures/F22/spec.md"
+        field_path: "spec.acceptance_criteria[1]"
+      covered_by_steps:
+        - "VAL-F22-001-002"
+      related_requirements:
+        - "REQ-NOT-001"
+
+    - id: "AC-NOT-003"
+      description: "每次发送的状态（pending/sent/failed）被准确记录到数据库"
+      verification_method: "automated_test"
+      source:
+        artifact_id: "F22-specs"
+        file: "tests/fixtures/F22/spec.md"
+        field_path: "spec.acceptance_criteria[2]"
+      covered_by_steps:
+        - "VAL-F22-001-003"
+      related_requirements:
+        - "REQ-NOT-002"
+
+    - id: "AC-NOT-004"
+      description: "新增渠道只需实现 ChannelAdapter 接口"
+      verification_method: "code_review"
+      source:
+        artifact_id: "F22-specs"
+        file: "tests/fixtures/F22/spec.md"
+        field_path: "spec.acceptance_criteria[3]"
+      covered_by_steps:
+        - "VAL-F22-001-004"
+      related_requirements:
+        - "REQ-NOT-003"
+
+    # 注意：AC-NOT-001（邮件在 5 秒内送达）未被任何 validation_step 直接引用
+    # 但它被 REQ-NOT-001 的 scenario 间接引用。P1 Resolver 仅在 validation_steps
+    # 中显式声明 acceptance_criteria_ids 时才解析。不上报 broken_ref，
+    # 因为这不是"引用断裂"，而是"未被验证步骤覆盖"（属于 V2 覆盖率问题）。
+
+  # ============================================================
+  # Constraints（步骤 4：P1 Resolver — V3 路径）
+  # task.constraints.constraint_refs[] → Architecture.constraints[]
+  # ============================================================
+  constraints:
+    - id: "CON-NOT-001"
+      rule: "Service 层不得直接访问数据库，必须通过 Repository 接口"
+      type: "architecture"
+      severity: "block"
+      verification: "code_review"
+      source:
+        artifact_id: "notification-architecture"
+        file: "tests/fixtures/F22/architecture.md"
+        field_path: "architecture.constraints[0]"
+      related_modules:
+        - "MOD-NOT-001"
+      related_requirements:
+        - "REQ-NOT-001"
+
+    - id: "CON-NOT-002"
+      rule: "所有通知事件必须持久化到数据库后才能确认消费"
+      type: "reliability"
+      severity: "block"
+      verification: "code_review"
+      source:
+        artifact_id: "notification-architecture"
+        file: "tests/fixtures/F22/architecture.md"
+        field_path: "architecture.constraints[1]"
+      related_modules:
+        - "MOD-NOT-001"
+      related_requirements:
+        - "REQ-NOT-001"
+
+    # 注意：CON-NOT-003 和 CON-NOT-004 存在于 Architecture 中
+    # 但未被 task.constraints.constraint_refs 引用。P1 Resolver 不报错，
+    # 因为这是"未被引用的约束"（属于 V3 覆盖率问题），不是"引用断裂"。
+
+  # ============================================================
+  # Validation Steps（步骤 1：直接从 Task artifact 提取）
+  # ============================================================
+  validation_steps:
+    - id: "VAL-F22-001-001"
+      type: "automated_test"
+      description: "运行单元测试"
+      command: "pytest tests/services/test_notification.py -v"
+      expected_result: "所有测试通过，覆盖率 > 80%"
+      requirement_refs:
+        - "REQ-NOT-001"
+        - "REQ-NOT-002"
+      acceptance_criteria_ids: []
+
+    - id: "VAL-F22-001-002"
+      type: "automated_test"
+      description: "验证邮件发送重试"
+      command: "pytest tests/services/test_notification.py::test_retry -v"
+      expected_result: "失败时重试 3 次，最终状态为 failed"
+      requirement_refs: []
+      acceptance_criteria_ids:
+        - "AC-NOT-002"
+
+    - id: "VAL-F22-001-003"
+      type: "automated_test"
+      description: "验证状态追踪"
+      command: "pytest tests/services/test_notification.py::test_status_tracking -v"
+      expected_result: "状态正确记录为 pending → sent/failed"
+      requirement_refs: []
+      acceptance_criteria_ids:
+        - "AC-NOT-003"
+
+    - id: "VAL-F22-001-004"
+      type: "code_review"
+      description: "代码审查"
+      expected_result: "无 block 项，命名规范符合项目约定"
+      requirement_refs: []
+      acceptance_criteria_ids:
+        - "AC-NOT-004"
+
+  # ============================================================
+  # Project State（步骤 5：从项目配置文件加载）
+  # ============================================================
+  project_state:
+    name: "通知推送系统"
+    stack:
+      backend: "FastAPI"
+      database: "PostgreSQL"
+    architecture_rules:
+      - "Service 层负责业务逻辑，不得直接操作数据库"
+      - "所有 API 返回标准 JSON 格式"
+    active_orders:
+      - "F22-order-001"
+    session:
+      next_step: "执行 F22-order-001 阶段 2（写码）"
+
+  # ============================================================
+  # Memory（步骤 5：从架构决策文档加载）
+  # ============================================================
+  memory:
+    adr:
+      - id: "ADR-001"
+        title: "使用 SMTP 而非第三方 API"
+        decision: "使用标准 SMTP 协议发送邮件，不依赖第三方 API"
+        consequences: "需要自行处理 SMTP 连接池和重试逻辑，但不增加外部依赖"
+        status: "accepted"
+        related_requirements:
+          - "REQ-NOT-001"
+      - id: "ADR-002"
+        title: "使用 Repository 模式隔离数据访问"
+        decision: "引入 Repository 接口，Service 层通过 Repository 访问数据"
+        consequences: "增加一层抽象，但提高了可测试性"
+        status: "accepted"
+        related_requirements:
+          - "REQ-NOT-001"
+          - "REQ-NOT-002"
+    conventions:
+      - "使用 Repository Pattern 访问数据库"
+      - "类型注解覆盖率 100%"
+      - "遵循项目命名规范"
+
+  # ============================================================
+  # Budget（步骤 6：P2 Budget — 上下文大小控制）
+  # ============================================================
+  budget:
+    max_tokens: 30000
+    reserve_tokens: 5000
+    available_tokens: 25000
+    estimated_tokens: 7200   # 约 3600 中文字 * 2 token/字
+    utilization: 0.288        # 7200 / 25000
+    truncated: []             # 未超出预算，无裁减
+
+  # ============================================================
+  # Resolve Trace（步骤 2-4 汇总：每条引用的解析结果）
+  # ============================================================
+  resolve_trace:
+    # V1 路径：requirement_refs → Spec.requirements
+    - source: "task.requirement_refs[0].requirement_id"
+      target: "spec.requirements.REQ-NOT-001"
+      status: "resolved"
+      artifact: "F22-specs"
+      file: "tests/fixtures/F22/spec.md"
+
+    - source: "task.requirement_refs[1].requirement_id"
+      target: "spec.requirements.REQ-NOT-002"
+      status: "resolved"
+      artifact: "F22-specs"
+      file: "tests/fixtures/F22/spec.md"
+
+    - source: "task.requirement_refs[2].requirement_id"
+      target: "spec.requirements.REQ-NOT-003"
+      status: "resolved"
+      artifact: "F22-specs"
+      file: "tests/fixtures/F22/spec.md"
+
+    # V2 路径：validation_steps[].acceptance_criteria_ids[] → Spec.acceptance_criteria[]
+    - source: "task.validation_steps[1].acceptance_criteria_ids[0]"
+      target: "spec.acceptance_criteria.AC-NOT-002"
+      status: "resolved"
+      artifact: "F22-specs"
+      file: "tests/fixtures/F22/spec.md"
+
+    - source: "task.validation_steps[2].acceptance_criteria_ids[0]"
+      target: "spec.acceptance_criteria.AC-NOT-003"
+      status: "resolved"
+      artifact: "F22-specs"
+      file: "tests/fixtures/F22/spec.md"
+
+    - source: "task.validation_steps[3].acceptance_criteria_ids[0]"
+      target: "spec.acceptance_criteria.AC-NOT-004"
+      status: "resolved"
+      artifact: "F22-specs"
+      file: "tests/fixtures/F22/spec.md"
+
+    # V3 路径：constraints.constraint_refs[] → Architecture.constraints[]
+    - source: "task.constraints.constraint_refs[0]"
+      target: "architecture.constraints.CON-NOT-001"
+      status: "resolved"
+      artifact: "notification-architecture"
+      file: "tests/fixtures/F22/architecture.md"
+
+    - source: "task.constraints.constraint_refs[1]"
+      target: "architecture.constraints.CON-NOT-002"
+      status: "resolved"
+      artifact: "notification-architecture"
+      file: "tests/fixtures/F22/architecture.md"
+
+  # ============================================================
+  # V1-V3 解析统计
+  # ============================================================
+  resolve_summary:
+    v1_requirement_refs:
+      total: 3
+      resolved: 3
+      broken: 0
+      coverage_rate: 1.0
+
+    v2_acceptance_criteria_ids:
+      total: 3
+      resolved: 3
+      broken: 0
+      coverage_rate: 1.0
+
+    v3_constraint_refs:
+      total: 2
+      resolved: 2
+      broken: 0
+      coverage_rate: 1.0
+
+  # ============================================================
+  # 与 Verify Schema 的映射（供 harness-verify 使用）
+  # ============================================================
+  coverage:
+    requirement_coverage:
+      total_requirements: 3       # Spec 定义了 3 个 REQ
+      covered_requirements: 3     # Task 引用了全部 3 个
+      coverage_rate: 1.0
+      uncovered: []
+
+    acceptance_coverage:
+      total_criteria: 4           # Spec 定义了 4 个 AC
+      covered_criteria: 3         # Task 的 validation_steps 覆盖了 3 个
+      coverage_rate: 0.75
+      uncovered:
+        - "AC-NOT-001"            # 未被任何 validation_step 直接引用
+
+    constraint_coverage:
+      total_constraints: 4        # Architecture 定义了 4 个 CON
+      referenced_constraints: 2   # Task 引用了 2 个
+      coverage_rate: 0.5
+      unreferenced:
+        - "CON-NOT-003"
+        - "CON-NOT-004"
+
+    validation_coverage:
+      total_validations: 4        # Task 定义了 4 个 VAL
+      defined_validations: 4      # 全部有定义
+      coverage_rate: 1.0
+      status_distribution:
+        defined: 4
+        pending: 0

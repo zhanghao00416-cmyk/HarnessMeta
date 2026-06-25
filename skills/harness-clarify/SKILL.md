@@ -67,7 +67,7 @@ features:
 ```
 ## 需求澄清完成
 
-已澄清：{{count}} / {{total}} 个功能
+已澄清：{{context.session.completed_count}} / {{context.session.total_count}} 个功能
 
 | 功能 | 行为 | 边界 | 文档 | 状态 |
 |------|------|------|------|------|

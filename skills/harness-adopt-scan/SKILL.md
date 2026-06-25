@@ -1,4 +1,4 @@
----
+﻿---
 name: harness-adopt-scan
 description: 已有代码接入（阶段 1）。扫描已有代码库，反推项目结构、功能清单、架构原则，生成 project.yaml + 目录结构 + 全部 meta 文件。所有功能标记为 passing。
 ---
@@ -145,7 +145,19 @@ changes/archive/
 | `session-handoff.md` | `session-handoff.md` | 初始化为"代码接入完成"状态 |
 | `evaluator-rubric.md` | `evaluator-rubric.md` | 直接复制模板 |
 
-### 7. 生成功能状态清单
+### 7. 生成项目索引（可选增强）
+
+如果上下文允许，执行 `harness-context-index` 生成项目索引文件（存入 `docs/meta/`）：
+
+- `project-index.yaml`：所有源文件的路径、域、类型
+- `domain-map.yaml`：业务域与代码路径、规格文档的映射
+- `dependency-map.yaml`：文件间的 import/引用关系
+
+> 索引文件为后续 `harness-explore` 和 `harness-adopt-spec` 提供快速定位能力。如上下文不足，可跳过此步骤，在 `harness-adopt-spec` 阶段或后续单独执行 `/harness-context-index` 补充生成。
+
+详见 `skills/harness-context-index/SKILL.md`。
+
+### 8. 生成功能状态清单
 
 创建 `feature_list.json`，所有功能标记为 `passing`：
 
@@ -163,7 +175,7 @@ changes/archive/
 }
 ```
 
-### 8. 输出完成报告
+### 9. 输出完成报告
 
 ```
 ## harness-adopt-scan 完成
@@ -172,6 +184,7 @@ changes/archive/
 技术栈：{{tech_stack}}
 功能清单：{{feature_count}} 个（全部 passing）
 核心 meta 文件：6 个已生成
+项目索引：{{indexed_files}} 个文件已索引（如生成）
 
 下一步：执行 /harness-adopt-spec 生成规格文档（建议新会话）
 ```
@@ -184,3 +197,4 @@ changes/archive/
 - 所有功能状态标记为 `passing`（代码已实现并运行）
 - 功能清单和架构原则必须经用户确认后才生成文件
 - 所有 `{{variable}}` 占位符从代码分析结果取值
+- 项目索引为可选增强步骤，上下文不足时可跳过

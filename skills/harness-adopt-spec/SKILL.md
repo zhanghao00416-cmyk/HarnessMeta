@@ -65,7 +65,7 @@ src/chat/     → 域 = chat
 
 ### 4. 生成架构规格文件
 
-在 `docs/specs/_architecture/` 下生成 5 个文件，使用 `templates/architecture/` 模板：
+在 `docs/specs/_architecture/` 下生成 5 个后端 + 2 个前端架构文件（共 7 个），使用 `templates/architecture/` 模板：
 
 | 模板 | 输出路径 | 反向提取规则 |
 |------|---------|-------------|
@@ -74,12 +74,15 @@ src/chat/     → 域 = chat
 | `DEPLOYMENT.md` | `docs/specs/_architecture/DEPLOYMENT.md` | 从 Dockerfile / docker-compose.yml / 环境变量配置提取服务编排和部署架构 |
 | `DOMAIN_MAP.md` | `docs/specs/_architecture/DOMAIN_MAP.md` | 从目录结构、import 关系提取域职责和分层规则 |
 | `ERROR_CODE.md` | `docs/specs/_architecture/ERROR_CODE.md` | 从异常类定义、错误处理代码提取错误码体系 |
+| `FRONTEND_STYLE.md` | `docs/specs/_architecture/FRONTEND_STYLE.md` | 从前端代码提取技术栈、目录结构、命名规范、API 调用层、状态管理、路由、样式、测试规范（仅全栈/前端项目生成） |
+| `COMPONENT_LIBRARY.md` | `docs/specs/_architecture/COMPONENT_LIBRARY.md` | 从前端代码提取通用组件、布局组件、业务组件需求，登记组件注册表（仅全栈/前端项目生成） |
 
 **生成规则**：
 
 - 读取代码中的实际实现，提取架构相关信息
 - 确保架构规格与代码实现一致（不是理想化设计，而是代码事实）
 - 如果代码中某部分架构不规范，在规格中如实记录，用 `[注意: 代码实现与最佳实践不一致]` 标注
+- **前端架构规格（FRONTEND_STYLE.md、COMPONENT_LIBRARY.md）仅在项目包含前端代码时生成**：扫描是否存在前端目录（`frontend/`、`src/components/`、`src/pages/`、`src/views/`）或前端配置文件（`package.json` 含 Vue/React 依赖）。如为纯后端项目，跳过这两个文件
 
 ### 5. 生成工作流 meta 文件（5 个）
 
@@ -107,12 +110,14 @@ src/chat/     → 域 = chat
 - auth/spec.md（{{req_count}} 个需求，{{scenario_count}} 个场景）
 - chat/spec.md（...）
 
-架构规格：5 个已生成
+架构规格：7 个已生成（或 5 个，纯后端项目跳过前端规格）
 - API_CONTRACT.md（{{endpoint_count}} 个端点）
 - DATA_MODEL.md（{{table_count}} 张表）
 - DEPLOYMENT.md（{{service_count}} 个服务）
 - DOMAIN_MAP.md（{{domain_count}} 个域）
 - ERROR_CODE.md（{{error_count}} 个错误码）
+- FRONTEND_STYLE.md（前端规范，如适用）
+- COMPONENT_LIBRARY.md（组件注册表，如适用）
 
 工作流 meta 文件：5 个已生成
 全部 11 个 meta 文件就绪。

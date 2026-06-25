@@ -1,0 +1,520 @@
+# Context Contract
+# Harness-Meta 统一上下文协议
+# 所有 Skill 必须遵守此结构访问项目信息
+#
+# 使用规则：
+# 1. 禁止在 Skill 中直接使用旧变量名（如 {{project_name}}）
+# 2. 所有变量必须通过 context.* 路径访问
+# 3. 新增变量必须先在此文件注册
+# 4. source 字段标明数据来源，便于 Context Builder 自动填充
+#
+# ⚠️ **Frozen Schema（v1.0-frozen，2026-06-24 冻结）**：
+# 本文件已冻结。任何修改必须遵循 Schema Change Policy（见 templates/meta/schema-change-policy.md），
+# 不得直接修改字段语义、删除字段或修改必填规则。
+# 冻结依据：Phase 1.5 验证通过 + Phase 2 链路审查通过。
+
+---
+
+# ============================================
+# 第一层：Project 项目级信息
+# ============================================
+context:
+  project:
+    name:
+      description: "项目名称"
+      source: "project.yaml / project.name"
+      required: true
+      legacy: "{{project_name}}"
+    
+    description:
+      description: "项目描述"
+      source: "project.yaml / project.description"
+      required: true
+      legacy: "{{project_description}}"
+    
+    language:
+      description: "文档语言（zh / en）"
+      source: "project.yaml / project.language"
+      required: true
+      legacy: "{{project_language}}"
+    
+    spec_lifecycle:
+      description: "规格生命周期模式"
+      source: "project.yaml / project.spec_lifecycle"
+      required: true
+      legacy: "{{spec_lifecycle}}"
+    
+    # 技术栈信息
+    stack:
+      backend:
+        description: "后端技术栈（如 FastAPI / Django / Spring Boot）"
+        source: "project.yaml / context"
+        required: false
+        legacy: "{{backend_tech}}"
+      
+      frontend:
+        description: "前端技术栈（如 Vue / React / Next.js）"
+        source: "project.yaml / context"
+        required: false
+        legacy: "{{frontend_tech}}"
+      
+      database:
+        description: "数据库技术（如 MySQL / PostgreSQL / MongoDB）"
+        source: "project.yaml / context"
+        required: false
+        legacy: "{{database_tech}}"
+      
+      cache:
+        description: "缓存技术（如 Redis / Memcached）"
+        source: "project.yaml / context"
+        required: false
+        legacy: "{{cache_tech}}"
+      
+      vector_store:
+        description: "向量存储（如 Qdrant / Milvus / Pinecone）"
+        source: "project.yaml / context"
+        required: false
+        legacy: "{{vector_store_tech}}"
+      
+      message_queue:
+        description: "消息队列（如 RabbitMQ / Kafka / Redis Stream）"
+        source: "project.yaml / context"
+        required: false
+        legacy: "{{message_queue_tech}}"
+    
+    # 部署信息
+    deployment:
+      type:
+        description: "部署方式（docker-compose / k8s / standalone）"
+        source: "project.yaml / deployment.type"
+        required: false
+        legacy: "{{deployment_type}}"
+      
+      compose_file:
+        description: "Compose 文件路径"
+        source: "project.yaml / deployment.compose_file"
+        required: false
+        legacy: "{{compose_file}}"
+    
+    # 验证命令
+    verify_commands:
+      health_check:
+        description: "健康检查命令"
+        source: "project.yaml / verify_commands.health_check"
+        required: false
+        legacy: "{{health_check_command}}"
+      
+      architecture_check:
+        description: "架构约束检查命令"
+        source: "project.yaml / verify_commands.architecture_check"
+        required: false
+        legacy: "{{architecture_check_command}}"
+
+# ============================================
+# 第二层：Feature 功能级信息
+# ============================================
+  feature:
+    id:
+      description: "功能编号（如 F01 / F02）"
+      source: "project.yaml / features[].id"
+      required: true
+      legacy: "{{feature_id}}"
+    
+    name:
+      description: "功能名称（标准字段）"
+      source: "project.yaml / features[].title"
+      required: true
+      legacy: "{{feature_name}}"
+    
+    title:
+      description: "功能标题（与 name 同义，已废弃，将在 v2 删除）"
+      source: "project.yaml / features[].title"
+      required: false
+      deprecated: true
+      legacy: "{{feature_title}}"
+    
+    description:
+      description: "功能描述"
+      source: "project.yaml / features[].behavior"
+      required: false
+      legacy: "{{feature_description}}"
+    
+    domain:
+      description: "所属业务域"
+      source: "project.yaml / features[].domain"
+      required: false
+      legacy: "{{domain}}"
+    
+    dependencies:
+      description: "依赖的功能 ID 列表"
+      source: "project.yaml / features[].dependencies"
+      required: false
+      legacy: "{{feature_dependencies}}"
+    
+    schema:
+      description: "变更 Schema 类型（hotfix / standard / feature）"
+      source: "project.yaml / features[].schema"
+      required: false
+      legacy: "{{schema_name}}"
+    
+    behavior:
+      description: "行为描述（澄清阶段填写）"
+      source: "project.yaml / features[].behavior"
+      required: false
+      legacy: "{{behavior_brief}}"
+    
+    verify_command:
+      description: "功能验证命令"
+      source: "project.yaml / features[].verify_command"
+      required: false
+      legacy: "{{verify_command}}"
+
+# ============================================
+# 第三层：Task 任务级信息
+# ============================================
+  task:
+    id:
+      description: "任务/工单编号"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{task_id}}"
+    
+    title:
+      description: "任务标题"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{task_title}}"
+    
+    description:
+      description: "任务描述"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{task_description}}"
+    
+    domain:
+      description: "任务所属域"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{task_domain}}"
+    
+    dependencies:
+      description: "任务依赖"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{task_dependencies}}"
+    
+    status:
+      description: "任务状态（not_started / active / passing）"
+      source: "progress.md"
+      required: false
+      legacy: "{{task_status}}"
+    
+    # 工单变更追踪
+    patches:
+      description: "工单补丁/修改记录"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{patches}}"
+    
+    supersedes:
+      description: "此工单替代的前序工单"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{supersedes}}"
+    
+    superseded_by:
+      description: "替代此工单的后续工单"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{superseded_by}}"
+    
+    # 工单执行信息
+    code_deps:
+      description: "跨工单代码依赖（前序工单的核心文件路径）"
+      source: "orders/order.md / DEPENDENCY_MAP.md"
+      required: false
+      legacy: "{{code_deps}}"
+    
+    required_docs:
+      description: "执行此工单前必须阅读的文档列表"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{required_docs}}"
+    
+    implementation_plan:
+      description: "实现计划（文件清单 + 职责表）"
+      source: "orders/order.md"
+      required: false
+      legacy: "{{implementation_plan}}"
+
+# ============================================
+# 第四层：Architecture 架构级信息
+# ============================================
+  architecture:
+    principles:
+      description: "架构核心原则列表"
+      source: "ARCHITECTURE.md"
+      required: false
+      legacy: "{{principles}}"
+    
+    rules:
+      description: "架构规则列表"
+      source: "ARCHITECTURE.md"
+      required: false
+      legacy: "{{architecture_rules}}"
+    
+    layers:
+      description: "分层架构描述"
+      source: "ARCHITECTURE.md"
+      required: false
+      legacy: "{{architecture_layers}}"
+    
+    dependency_direction:
+      description: "依赖方向规则"
+      source: "ARCHITECTURE.md"
+      required: false
+      legacy: "{{dependency_direction}}"
+    
+    naming_conventions:
+      description: "命名约定"
+      source: "ARCHITECTURE.md"
+      required: false
+      legacy: "{{naming_conventions}}"
+    
+    project_structure:
+      description: "项目目录结构"
+      source: "ARCHITECTURE.md"
+      required: false
+      legacy: "{{project_structure}}"
+
+# ============================================
+# 第五层：Constraints 约束级信息
+# ============================================
+  constraints:
+    # 错误码体系
+    error_codes:
+      description: "错误码注册表"
+      source: "ERROR_CODE.md"
+      required: false
+      legacy: "{{error_codes}}"
+    
+    # API 契约
+    api_contract:
+      description: "API 契约规范"
+      source: "API_CONTRACT.md"
+      required: false
+      legacy: "{{api_contract}}"
+    
+    # 域映射
+    domain_map:
+      description: "域职责映射"
+      source: "DOMAIN_MAP.md"
+      required: false
+      legacy: "{{domain_map}}"
+    
+    # 数据模型
+    data_model:
+      description: "数据模型规范"
+      source: "DATA_MODEL.md"
+      required: false
+      legacy: "{{data_model}}"
+    
+    # 前端规范
+    frontend_style:
+      description: "前端样式规范"
+      source: "FRONTEND_STYLE.md"
+      required: false
+      legacy: "{{frontend_style}}"
+    
+    # 组件库
+    component_library:
+      description: "组件库规范"
+      source: "COMPONENT_LIBRARY.md"
+      required: false
+      legacy: "{{component_library}}"
+
+# ============================================
+# 第六层：Memory 记忆级信息
+# ============================================
+  memory:
+    # 架构决策
+    architecture_decisions:
+      description: "已记录的架构决策"
+      source: "harness-project-memory / architecture-decisions.md"
+      required: false
+      legacy: "{{architecture_decisions}}"
+    
+    # 项目约定
+    project_conventions:
+      description: "项目约定和惯例"
+      source: "harness-project-memory / project-conventions.md"
+      required: false
+      legacy: "{{project_conventions}}"
+    
+    # 技术画像
+    technology_profile:
+      description: "技术栈画像"
+      source: "harness-project-memory / technology-profile.yaml"
+      required: false
+      legacy: "{{technology_profile}}"
+    
+    # 经验教训
+    lessons_learned:
+      description: "已积累的经验教训"
+      source: "harness-project-memory / lessons-learned.md"
+      required: false
+      legacy: "{{lessons_learned}}"
+
+# ============================================
+# 第七层：Session 会话级信息（动态）
+# ============================================
+  session:
+    active_orders:
+      description: "当前活跃工单"
+      source: "progress.md"
+      required: false
+      legacy: "{{active_orders}}"
+    
+    next_step:
+      description: "下一步操作"
+      source: "session-handoff.md"
+      required: false
+      legacy: "{{next_step}}"
+    
+    pause_point:
+      description: "当前暂停点"
+      source: "session-handoff.md"
+      required: false
+      legacy: "{{pause_point}}"
+    
+    completed_orders:
+      description: "已完成的工单"
+      source: "session-handoff.md"
+      required: false
+      legacy: "{{completed_orders}}"
+    
+    # 会话日期
+    date:
+      description: "当前会话日期（YYYY-MM-DD）"
+      source: "动态生成"
+      required: false
+      legacy: "{{date}}"
+    
+    # 统计计数
+    completed_count:
+      description: "已完成的功能/工单数量"
+      source: "动态计算"
+      required: false
+      legacy: "{{count}}"
+    
+    total_count:
+      description: "总功能/工单数量"
+      source: "project.yaml / features[]"
+      required: false
+      legacy: "{{total}}"
+    
+    # 批次信息
+    batch_number:
+      description: "当前批次编号"
+      source: "动态计算"
+      required: false
+      legacy: "{{batch}}"
+    
+    total_batches:
+      description: "总批次数"
+      source: "动态计算"
+      required: false
+      legacy: "{{total_batches}}"
+    
+    batch_count:
+      description: "当前批次包含的工单数"
+      source: "动态计算"
+      required: false
+      legacy: "{{batch_count}}"
+    
+    batch_start:
+      description: "当前批次起始工单 ID"
+      source: "动态计算"
+      required: false
+      legacy: "{{start}}"
+    
+    batch_end:
+      description: "当前批次结束工单 ID"
+      source: "动态计算"
+      required: false
+      legacy: "{{end}}"
+    
+    cumulative_count:
+      description: "累计已生成工单数"
+      source: "动态计算"
+      required: false
+      legacy: "{{cumulative_count}}"
+    
+    order_summary:
+      description: "工单执行顺序摘要"
+      source: "动态计算"
+      required: false
+      legacy: "{{order_summary}}"
+    
+    # 规格生成统计
+    domain_count:
+      description: "已生成的域规格数量"
+      source: "动态计算"
+      required: false
+      legacy: "{{domain_count}}"
+    
+    skipped_count:
+      description: "跳过（未澄清）的功能数量"
+      source: "动态计算"
+      required: false
+      legacy: "{{skipped_count}}"
+    
+    researched_file_count:
+      description: "代码调研扫描的文件数量"
+      source: "动态计算"
+      required: false
+      legacy: "{{researched_file_count}}"
+
+# ============================================
+# 变更管理配置
+# ============================================
+  change_management:
+    default_schema:
+      description: "默认变更类型"
+      source: "project.yaml / change_management.default_schema"
+      required: false
+      legacy: "{{default_schema}}"
+    
+    specs_dir:
+      description: "主规格目录"
+      source: "project.yaml / change_management.specs_dir"
+      required: false
+      legacy: "{{specs_dir}}"
+    
+    changes_dir:
+      description: "活跃变更目录"
+      source: "project.yaml / change_management.changes_dir"
+      required: false
+      legacy: "{{changes_dir}}"
+    
+    archive_dir:
+      description: "归档目录"
+      source: "project.yaml / change_management.archive_dir"
+      required: false
+      legacy: "{{archive_dir}}"
+
+# ============================================
+# 使用示例
+# ============================================
+# 
+# 旧写法（禁止）：
+#   {{project_name}} 的 {{feature_name}} 功能
+#
+# 新写法（推荐）：
+#   {{context.project.name}} 的 {{context.feature.name}} 功能
+#
+# 在 SKILL.md 中引用：
+#   项目：{{context.project.name}}
+#   功能：{{context.feature.name}}（ID: {{context.feature.id}}）
+#   技术栈：{{context.project.stack.backend}} + {{context.project.stack.database}}
+#   验证命令：{{context.project.verify_commands.health_check}}

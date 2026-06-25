@@ -1,0 +1,593 @@
+# Spec Schema
+
+> **版本**：v1.0-frozen
+> **状态**：Frozen（2026-06-24 冻结）
+> **冻结依据**：Phase 2 Artifact Chain Review v2.0 通过（总分 9.25/10）
+> **依赖**：Artifact Meta Schema v1.0-frozen
+> **职责**：定义业务规格（What）—— 描述系统做什么，不描述怎么做
+>
+> 设计目标：
+> - **可追踪（Traceable）**：每个需求有唯一 ID，下游 Task/Verify 可反向追踪
+> - **可拆解（Orderable）**：需求粒度适中，可被 harness-order 分解为工单
+> - **可验证（Verifiable）**：每个需求有明确的验收标准
+>
+> ⚠️ **Frozen Schema**：本文件已冻结。任何修改必须遵循 Schema Change Policy（见 schema-change-policy.md），
+> 不得直接修改字段语义、删除字段或修改必填规则。
+
+---
+
+## 设计原则
+
+1. **只描述 What，不描述 How**
+   - ✅ 正确："用户可以通过邮件接收通知"
+   - ❌ 错误："使用 SMTP 客户端发送邮件，调用 send_email() 函数"
+
+2. **每个需求可独立验证**
+   - 单个需求应该能被一个测试用例覆盖
+   - 避免"实现整个系统"这种不可验证的大需求
+
+3. **需求可追溯到业务价值**
+   - 每个需求说明"为什么需要这个功能"
+   - 便于后续判断需求优先级和变更影响
+
+4. **与 Task Schema 边界清晰**
+   - Spec 定义"要做什么"
+   - Task 定义"怎么实现"
+   - 禁止在 Spec 中出现文件路径、代码结构、实现步骤
+
+---
+
+## Schema 定义
+
+```yaml
+spec:
+  # === 继承自 Artifact Meta ===
+  # artifact.id, artifact.type, artifact.title, artifact.domain,
+  # artifact.status, artifact.version, artifact.source,
+  # artifact.dependencies, artifact.related_artifacts
+  # 见 artifact-meta-schema.yaml
+
+  # === 业务概述 ===
+  overview:
+    description: "业务背景和功能概述（1-2 段）"
+    type: string
+    required: true
+    example: |
+      通知推送系统允许用户通过多种渠道（邮件、短信、应用内）
+      接收系统生成的通知。支持按优先级路由和批量发送。
+
+  # === 需求列表 ===
+  requirements:
+    description: "业务需求列表，每个需求可独立验证"
+    type: array
+    required: true
+    items:
+      type: object
+      properties:
+        id:
+          description: "需求唯一标识（用于追踪）"
+          type: string
+          format: "REQ-{domain}-{seq:03d}"
+          required: true
+          example: "REQ-NOT-001"
+
+        title:
+          description: "需求标题（一句话）"
+          type: string
+          required: true
+          example: "用户可以通过邮件接收通知"
+
+        description:
+          description: "需求详细描述"
+          type: string
+          required: true
+          example: |
+            当系统产生通知事件时，如果用户配置了邮件渠道，
+            系统应该通过邮件将通知内容发送给用户。
+
+        priority:
+          description: "需求优先级"
+          type: string
+          enum: [must, should, could, wont]
+          required: true
+          default: must
+          example: "must"
+
+        category:
+          description: "需求分类"
+          type: string
+          enum: [functional, non_functional, compliance, security, performance, usability, compatibility]
+          required: true
+          default: functional
+          example: "functional"
+
+        business_value:
+          description: "业务价值说明（为什么需要这个需求）"
+          type: string
+          required: false
+          example: "邮件是最基础的通知渠道，覆盖所有用户"
+
+        scenarios:
+          description: "需求场景列表（Given-When-Then 格式）"
+          type: array
+          required: true
+          items:
+            type: object
+            properties:
+              id:
+                description: "场景唯一标识"
+                type: string
+                format: "SC-{req_id}-{seq:02d}"
+                required: true
+                example: "SC-REQ-NOT-001-01"
+
+              title:
+                description: "场景标题"
+                type: string
+                required: true
+                example: "用户配置邮件渠道后接收通知"
+
+              given:
+                description: "前置条件"
+                type: string
+                required: true
+                example: "用户已配置邮件渠道且验证通过"
+
+              when:
+                description: "触发动作"
+                type: string
+                required: true
+                example: "系统产生一条通知事件"
+
+              then:
+                description: "预期结果"
+                type: string
+                required: true
+                example: "系统通过邮件将通知发送给用户"
+
+              acceptance_criteria:
+                description: "验收标准（可验证的 checklist）"
+                type: array
+                items:
+                  type: string
+                required: true
+                example:
+                  - "邮件在 5 分钟内送达"
+                  - "邮件内容包含通知标题和正文"
+                  - "发送失败时记录错误日志"
+
+  # === 业务规则 ===
+  business_rules:
+    description: "跨需求的业务规则"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        id:
+          description: "规则唯一标识"
+          type: string
+          format: "BR-{domain}-{seq:03d}"
+          required: true
+          example: "BR-NOT-001"
+
+        description:
+          description: "规则描述"
+          type: string
+          required: true
+          example: "通知优先级决定发送渠道选择顺序"
+
+        scope:
+          description: "规则适用范围"
+          type: string
+          required: false
+          example: "适用于所有通知发送场景"
+
+        related_requirements:
+          description: "关联的需求 ID 列表"
+          type: array
+          items:
+            type: string
+          required: false
+          example: ["REQ-NOT-001", "REQ-NOT-002"]
+
+  # === 用户流程 ===
+  user_flows:
+    description: "关键用户流程（可选）"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        id:
+          description: "流程唯一标识"
+          type: string
+          format: "UF-{domain}-{seq:03d}"
+          required: true
+          example: "UF-NOT-001"
+
+        title:
+          description: "流程标题"
+          type: string
+          required: true
+          example: "用户接收通知流程"
+
+        steps:
+          description: "流程步骤"
+          type: array
+          required: true
+          items:
+            type: object
+            properties:
+              actor:
+                description: "参与者"
+                type: string
+                required: true
+                example: "系统"
+
+              action:
+                description: "动作"
+                type: string
+                required: true
+                example: "产生通知事件"
+
+              result:
+                description: "结果"
+                type: string
+                required: false
+                example: "通知进入发送队列"
+
+  # === API 变更（仅声明） ===
+  api_changes:
+    description: "API 变更声明（不涉及实现细节）"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        id:
+          description: "变更唯一标识"
+          type: string
+          format: "API-{domain}-{seq:03d}"
+          required: true
+          example: "API-NOT-001"
+
+        type:
+          description: "变更类型"
+          type: string
+          enum: [new, modified, deprecated, removed]
+          required: true
+          example: "new"
+
+        description:
+          description: "变更描述（业务语义）"
+          type: string
+          required: true
+          example: "新增通知发送接口，接收通知事件并触发渠道选择"
+
+        related_requirements:
+          description: "关联的需求 ID"
+          type: array
+          items:
+            type: string
+          required: false
+          example: ["REQ-NOT-001"]
+
+        # 注意：不包含端点路径、请求参数、响应格式等实现细节
+        # 这些属于 Architecture Schema 中的 API_CONTRACT
+
+  # === 数据变更（仅声明） ===
+  data_changes:
+    description: "数据模型变更声明（不涉及实现细节）"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        id:
+          description: "变更唯一标识"
+          type: string
+          format: "DATA-{domain}-{seq:03d}"
+          required: true
+          example: "DATA-NOT-001"
+
+        type:
+          description: "变更类型"
+          type: string
+          enum: [new_table, modified_table, new_field, modified_field, removed]
+          required: true
+          example: "new_table"
+
+        description:
+          description: "变更描述（业务语义）"
+          type: string
+          required: true
+          example: "新增通知记录表，存储通知发送历史和状态"
+
+        related_requirements:
+          description: "关联的需求 ID"
+          type: array
+          items:
+            type: string
+          required: false
+          example: ["REQ-NOT-001"]
+
+        # 注意：不包含字段类型、索引、约束等实现细节
+        # 这些属于 Architecture Schema 中的 DATA_MODEL
+
+  # === 追踪信息 ===
+  traceability:
+    description: "需求追踪矩阵"
+    type: object
+    required: true
+    properties:
+      requirement_ids:
+        description: "本 Spec 包含的所有需求 ID"
+        type: array
+        items:
+          type: string
+        required: true
+        example: ["REQ-NOT-001", "REQ-NOT-002", "REQ-NOT-003"]
+
+      upstream:
+        description: "上游关联（如 feature catalog 条目）"
+        type: array
+        required: false
+        items:
+          type: object
+          properties:
+            type:
+              description: "上游类型"
+              type: string
+              enum: [feature_catalog, user_story, business_requirement]
+              required: true
+
+            id:
+              description: "上游标识"
+              type: string
+              required: true
+              example: "F22"
+
+            description:
+              description: "上游描述"
+              type: string
+              required: false
+
+      downstream:
+        description: "下游关联（由 harness-order 填充）"
+        type: array
+        required: false
+        items:
+          type: object
+          properties:
+            type:
+              description: "下游类型"
+              type: string
+              enum: [task, test_case, verification]
+              required: true
+
+            id:
+              description: "下游标识"
+              type: string
+              required: true
+              example: "F22-order-001"
+
+            status:
+              description: "下游状态"
+              type: string
+              enum: [pending, active, completed]
+              required: false
+
+  # === 验收标准汇总 ===
+  acceptance_criteria:
+    description: "全局验收标准（跨需求的整体验证）"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        id:
+          description: "标准唯一标识"
+          type: string
+          format: "AC-{domain}-{seq:03d}"
+          required: true
+          example: "AC-NOT-001"
+
+        description:
+          description: "标准描述"
+          type: string
+          required: true
+          example: "所有通知渠道在 5 分钟内完成发送或标记失败"
+
+        verification_method:
+          description: "验证方法"
+          type: string
+          enum: [automated_test, manual_test, code_review, performance_test]
+          required: true
+          example: "performance_test"
+
+        related_requirements:
+          description: "关联的需求 ID"
+          type: array
+          items:
+            type: string
+          required: false
+          example: ["REQ-NOT-001", "REQ-NOT-002"]
+```
+
+---
+
+## 与现有模板的映射
+
+| 现有模板 | 当前结构 | 映射到 Spec Schema |
+|----------|----------|-------------------|
+| `specs/spec.md` | `## 用途` | `spec.overview` |
+| `specs/spec.md` | `## 需求` | `spec.requirements` |
+| `specs/spec.md` | `### 需求：{name}` | `spec.requirements[].title` |
+| `specs/spec.md` | `#### 场景：{scenario}` | `spec.requirements[].scenarios[]` |
+| `specs/spec.md` | `前置 / 当 / 则` | `scenario.given / when / then` |
+| `changes/delta-spec.md` | `## 新增需求` | `spec.requirements[]` (新增) |
+| `changes/delta-spec.md` | `## 修改需求` | `spec.requirements[]` (更新) |
+| `changes/delta-spec.md` | `## 移除需求` | `spec.requirements[]` (标记移除) |
+| `changes/delta-spec.md` | `## 重命名需求` | `spec.requirements[]` (更新 id) |
+
+---
+
+## 示例：完整 Spec
+
+```markdown
+---
+artifact:
+  id: F22-specs
+  type: spec
+  title: F22 通知推送系统规格
+  domain: notification
+  status: reviewed
+  version: "1.0.0"
+  source:
+    skill: harness-specify
+    feature_id: F22
+    created: "2026-06-24T15:30:00+08:00"
+    updated: "2026-06-24T15:30:00+08:00"
+  dependencies: ["F22-proposal"]
+  related_artifacts: ["api-contract-v2", "notification-domain-map"]
+---
+
+# F22 通知推送系统规格
+
+## 概述
+
+通知推送系统允许用户通过多种渠道（邮件、短信、应用内）接收系统生成的通知。
+支持按优先级路由和批量发送。
+
+## 需求
+
+### REQ-NOT-001：用户可以通过邮件接收通知
+
+**描述**：当系统产生通知事件时，如果用户配置了邮件渠道，系统应该通过邮件将通知内容发送给用户。
+
+**优先级**：must
+
+**业务价值**：邮件是最基础的通知渠道，覆盖所有用户
+
+#### 场景
+
+##### SC-REQ-NOT-001-01：用户配置邮件渠道后接收通知
+
+- **前置**：用户已配置邮件渠道且验证通过
+- **当**：系统产生一条通知事件
+- **则**：系统通过邮件将通知发送给用户
+
+**验收标准**：
+- [ ] 邮件在 5 分钟内送达
+- [ ] 邮件内容包含通知标题和正文
+- [ ] 发送失败时记录错误日志
+
+### REQ-NOT-002：用户可以通过短信接收高优先级通知
+
+...
+
+## 业务规则
+
+### BR-NOT-001：通知优先级决定发送渠道选择顺序
+
+**描述**：高优先级通知优先使用短信渠道，普通优先级使用邮件渠道。
+
+**适用范围**：适用于所有通知发送场景
+
+**关联需求**：REQ-NOT-001, REQ-NOT-002
+
+## 用户流程
+
+### UF-NOT-001：用户接收通知流程
+
+| 步骤 | 参与者 | 动作 | 结果 |
+|------|--------|------|------|
+| 1 | 系统 | 产生通知事件 | 通知进入发送队列 |
+| 2 | 系统 | 根据优先级选择渠道 | 确定发送方式 |
+| 3 | 系统 | 发送通知 | 用户收到通知 |
+
+## API 变更声明
+
+### API-NOT-001：新增通知发送接口
+
+**类型**：new
+
+**描述**：新增通知发送接口，接收通知事件并触发渠道选择
+
+**关联需求**：REQ-NOT-001
+
+## 数据变更声明
+
+### DATA-NOT-001：新增通知记录表
+
+**类型**：new_table
+
+**描述**：新增通知记录表，存储通知发送历史和状态
+
+**关联需求**：REQ-NOT-001
+
+## 追踪矩阵
+
+**需求列表**：
+- REQ-NOT-001
+- REQ-NOT-002
+- REQ-NOT-003
+
+**上游关联**：
+- feature_catalog: F22
+
+**下游关联**：（待 harness-order 填充）
+
+## 验收标准汇总
+
+### AC-NOT-001：所有渠道在 5 分钟内完成发送
+
+**验证方法**：performance_test
+
+**关联需求**：REQ-NOT-001, REQ-NOT-002
+```
+
+---
+
+## 与下游 Schema 的关系
+
+```
+Spec Schema（What）
+  ├── requirements[]
+  │     ├── id: REQ-NOT-001
+  │     └── scenarios[]
+  │           └── acceptance_criteria[]
+  │
+  └── traceability.downstream[] ←── Task Schema 填充
+          ├── task: F22-order-001
+          ├── task: F22-order-002
+          └── test_case: TC-NOT-001
+
+Task Schema（How）
+  ├── objective: "实现 REQ-NOT-001"
+  └── implementation_steps[]
+        └── references: REQ-NOT-001
+```
+
+---
+
+## 验证清单
+
+- [ ] 每个需求有唯一 ID（REQ-{domain}-{seq}）
+- [ ] 每个需求有至少一个场景
+- [ ] 每个场景有 Given-When-Then 结构
+- [ ] 每个场景有验收标准（可验证的 checklist）
+- [ ] 不包含实现细节（文件路径、代码结构、技术选型）
+- [ ] API 变更只声明业务语义，不包含端点定义
+- [ ] 数据变更只声明业务语义，不包含字段类型
+- [ ] traceability.requirement_ids 包含所有需求 ID
+- [ ] 需求优先级使用 must/should/could/wont
+
+---
+
+## 下一步
+
+Phase 2.2：在 Artifact Meta Schema 之上设计 **Task Schema**
+- 定义 `task` 类型的内容结构（objective, implementation_steps, validation_steps 等）
+- 建立 Task 对 Spec 的反向追踪（通过引用 requirement_id）

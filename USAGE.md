@@ -2,7 +2,7 @@
 
 ## 一句话理解
 
-> 用自然语言描述你的项目，通过 15 个 Skill 链驱动 AI 帮你生成整套工程管理体系，后续改代码也有完整变更管控。
+> 用自然语言描述你的项目，通过 20 个 Skill 链驱动 AI 帮你生成整套工程管理体系，后续改代码也有完整变更管控。
 
 ---
 
@@ -107,6 +107,7 @@ AI: 根据你的描述，我整理出以下功能和架构原则：
 
 ```
 /harness-adopt-scan            # 扫描代码库，反推 project.yaml + meta 文件
+/harness-context-index         # 构建项目索引（文件索引 / 域映射 / 依赖图）
 /harness-adopt-spec            # 从代码反推规格文档（建议新会话）
 ```
 
@@ -122,6 +123,9 @@ LLM 会话上下文有限，以下 Skill 建议在新会话中执行，避免上
 | harness-specify-arch | 生成 5 个架构规格 + 更新 FACT_REGISTRY | harness-specify 已完成 |
 | harness-adopt-spec | 从代码反推规格文档，上下文较重 | harness-adopt-scan 已完成 |
 | harness-order 后续批次 | 工单 >6 个时，每批在新会话生成 | 上一批已完成 |
+| harness-review-loop | 多轮审查 + 修复，上下文累积快 | harness-execute 或 harness-apply 已完成 |
+| harness-runtime-verify | 执行大量命令 + 多轮修复，耗时较长 | harness-review-loop 后或独立执行 |
+| harness-project-memory | 分析多份报告提取知识，上下文较重 | harness-verify 后或迭代结束时 |
 
 **何时必须切换会话**：
 
@@ -142,7 +146,8 @@ LLM 会话上下文有限，以下 Skill 建议在新会话中执行，避免上
 适用场景：从零开始的新项目。
 
 ```
-harness-init → harness-init-docs → harness-clarify → harness-specify → harness-specify-arch → harness-order → [harness-analyze] → harness-execute
+harness-init → harness-init-docs → harness-clarify → harness-specify → harness-specify-arch → harness-order → [harness-analyze] → [harness-context] → harness-execute
+    → [harness-review-loop] → [harness-runtime-verify] → harness-verify → [harness-project-memory]
 ```
 
 | Skill | 做什么 | 产出 |
@@ -154,14 +159,19 @@ harness-init → harness-init-docs → harness-clarify → harness-specify → h
 | **harness-specify-arch** | 生成 5 个架构规格 + 更新 FACT_REGISTRY（建议新会话） | docs/specs/_architecture/ 下 5 个文件 + FACT_REGISTRY 更新 |
 | **harness-order** | 根据依赖图生成工单文件（分批生成） | orders/ 下的工单文件（含三段式执行指令） |
 | **harness-analyze** | 跨文档一致性审计（只读不改文件，6 维度检测） | 审计报告（覆盖缺口/术语漂移/路径冲突/架构合规/错误码/依赖完整性） |
+| **harness-context** | 为工单打包执行上下文：收集相关规格、架构、源文件、约束 | orders/<ORDER_ID>/context.md |
 | **harness-execute** | 按三段式执行工单 | 代码实现 + progress.md/session-handoff.md 更新 |
+| **harness-review-loop** | 迭代代码审查：代码质量审查 → Agent 修复 → 再审查（最多 3 轮） | orders/<ORDER_ID>/review-report.md |
+| **harness-runtime-verify** | 运行时验证：执行 lint/test/build 等命令验证代码可运行（最多 3 轮修复） | orders/<ORDER_ID>/runtime-report.md |
+| **harness-verify** | 三维度检查（完整性/正确性/一致性） | 验证报告（每项含严重度 + 修复路径） |
 
 ### 流程 B：后续改代码（Brownfield）
 
 适用场景：项目已建好，需要迭代、修 bug、加功能。
 
 ```
-[harness-explore] → harness-change → harness-apply → harness-verify → harness-archive
+[harness-explore] → harness-change → harness-apply
+    → [harness-review-loop] → [harness-runtime-verify] → harness-verify → [harness-project-memory] → harness-archive
 ```
 
 | Skill | 做什么 | 产出 |
@@ -169,7 +179,10 @@ harness-init → harness-init-docs → harness-clarify → harness-specify → h
 | **harness-explore** | 需求不清时先调查代码库、分析瓶颈、对比方案 | 探索报告（只读，不修改代码） |
 | **harness-change** | 根据变更复杂度选 schema，生成变更文件夹 | changes/<name>/ 下的 proposal + delta-spec + design + tasks（proposal 含 created 时间戳 frontmatter） |
 | **harness-apply** | 按轻量三段式（只读分析→写码→自审）实现 tasks.md 中的任务 | 阶段 1 差异清单 + 阶段 2 代码变更（含 handoff 快照）+ 阶段 3 自审报告 + tasks.md checkbox 标记 |
+| **harness-review-loop** | 迭代代码审查：审查 → Agent 修复 → 再审查（最多 3 轮） | review-report.md（问题清单 + 修复历史 + 最终结论） |
+| **harness-runtime-verify** | 运行时验证：执行 lint/test/build 等实际命令验证代码可运行（最多 3 轮修复） | runtime-report.md（命令执行结果 + 失败分类 + 修复历史） |
 | **harness-verify** | 三维度检查（完整性/正确性/一致性） | 验证报告（每项含严重度 + 修复路径） |
+| **harness-project-memory** | 积累项目记忆：从审查/验证报告中提取决策、约定、教训、技术画像 | docs/meta/memory/ 下 4 个记忆文件（只追加，不删除历史） |
 | **harness-archive** | 合并增量规格到主规格，归档变更文件夹（支持批量） | docs/specs/ 更新 + changes/archive/ 归档（按 proposal frontmatter 的 created 排序） |
 
 ### 流程 C：已有代码接入（Adopt）
@@ -177,12 +190,13 @@ harness-init → harness-init-docs → harness-clarify → harness-specify → h
 适用场景：已有代码库，想纳入 harness 管理体系。
 
 ```
-harness-adopt-scan → harness-adopt-spec（建议新会话） → 后续改代码走 Flow B
+harness-adopt-scan → harness-context-index → harness-adopt-spec（建议新会话） → 后续改代码走 Flow B
 ```
 
 | Skill | 做什么 | 产出 |
 |-------|--------|------|
 | **harness-adopt-scan** | 扫描代码库，反推功能清单 + 架构原则，生成 project.yaml + meta 文件 | project.yaml + 6 个 meta + feature_list.json（全部 passing） |
+| **harness-context-index** | 构建项目索引：扫描结构、生成文件索引 / 域映射 / 依赖图 | docs/meta/ 下 3 个索引文件（project-index / domain-map / dependency-map） |
 | **harness-adopt-spec** | 从代码反推域规格 + 架构规格 + 工作流 meta 文件 | docs/specs/ 域规格 + 5 个架构规格 + 5 个工作流 meta 文件（docs/meta/） |
 
 接入后所有功能标记为 `passing`，后续改代码直接走 Flow B。
@@ -327,9 +341,13 @@ your-project/
 每个 Skill 启动时自动扫描磁盘文件判断当前状态（断点续跑）：
 - harness-init/init-docs：检查 `project.yaml` 和 `docs/meta/` 是否已存在
 - harness-order：扫描 `orders/` 目录，从缺失的第一批继续
+- harness-context：检查 `orders/<ORDER_ID>/context.md` 是否已存在
 - harness-execute：读 `progress.md` 找下一个 not_started 工单
 - harness-apply：读 `tasks.md` 中未完成的 checkbox
 - harness-adopt-scan：检查 `project.yaml` 和 `AGENTS.md` 是否已存在
+- harness-review-loop：检查 `orders/<ORDER_ID>/review-report.md` 是否存在及状态
+- harness-runtime-verify：检查 `orders/<ORDER_ID>/runtime-report.md` 是否存在及状态
+- harness-project-memory：检查 `docs/meta/memory/` 下记忆文件是否存在及更新状态
 
 也可以读 `session-handoff.md` 和 `progress.md` 手动恢复。对 AI 说“继续上次的工作”即可。
 
@@ -362,7 +380,7 @@ harness-init 内置了一份[功能建议目录](templates/reference/feature-cat
 
 ## 设计原则（完整版）
 
-> 核心 7 条见 README.md「核心理念」，以下为完整 9 条。
+> 核心 7 条见 README.md「核心理念」，以下为完整 14 条。
 
 1. **模板结构化**：每个产出物有固定 section，AI 填充而非自由发挥
 2. **依赖图约束**：artifact 按 DAG 顺序生成，前驱不存在则阻塞
@@ -373,3 +391,8 @@ harness-init 内置了一份[功能建议目录](templates/reference/feature-cat
 7. **断点续跑**：每个 Skill 启动时扫描磁盘文件判断状态，支持新会话继续
 8. **分批生成**：工单 >6 个时按拓扑层级分批，避免上下文溢出
 9. **工单三态流转**：not_started → active → passing，状态单一数据源
+10. **上下文打包**：执行前自动收集相关规格、架构、文件和约束，减少信息遗漏
+11. **审查闭环**：代码审查 → Agent 修复 → 再审查，最多 3 轮，确保代码质量
+12. **运行时验证**：通过实际工具命令（lint/test/build）验证代码可执行性
+13. **分层验证**：代码审查（质量）→ 运行时验证（可执行）→ 规格验证（正确性），三层把关
+14. **知识积累**：从每次审查和验证中提取决策、约定、教训，形成可传承的项目记忆

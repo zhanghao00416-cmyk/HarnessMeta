@@ -1,0 +1,386 @@
+# Artifact Meta Schema
+
+> **版本**：v1.0-frozen
+> **状态**：Frozen（2026-06-24 冻结）
+> **冻结依据**：Phase 2 Artifact Chain Review v2.0 通过（总分 9.25/10）
+> **依赖**：Context Contract v1（已冻结）
+>
+> 所有 Artifact（规格、工单、设计文档、架构文档等）必须包含此 Meta 层。
+> 它提供统一的身份标识、状态追踪和关联机制，确保不同 Skill 的产物可以自动关联。
+>
+> ⚠️ **Frozen Schema**：本文件已冻结。任何修改必须遵循 Schema Change Policy（见 schema-change-policy.md），
+> 不得直接修改字段语义、删除字段或修改必填规则。
+
+---
+
+## 设计原则
+
+1. **统一身份**：所有 Artifact 共享同一套 ID 和类型系统
+2. **状态单一来源**：每个 Artifact 的状态在此定义，禁止在多处维护
+3. **关联可追溯**：通过 `dependencies` 和 `related_artifacts` 建立 DAG
+4. **与 Context Contract 解耦**：Meta 描述 Artifact 本身，Context 描述项目环境
+
+---
+
+## Schema 定义
+
+```yaml
+artifact:
+  # === 身份标识 ===
+  id:
+    description: "Artifact 唯一标识"
+    type: string
+    format: "kebab-case"
+    required: true
+    examples:
+      - "F22-notification-system"      # 功能规格
+      - "F22-order-001"               # 工单
+      - "F22-design"                  # 技术设计
+      - "notification-domain-map"     # 架构文档
+      - "api-contract-v2"            # API 契约
+
+  type:
+    description: "Artifact 类型"
+    type: string
+    enum:
+      - spec           # 规格文档（主规格 / 增量规格）
+      - task           # 工单
+      - design         # 技术设计文档
+      - architecture   # 架构文档（API契约、数据模型、域映射等）
+      - proposal       # 变更提案
+      - report         # 报告（验证报告、评审报告等）
+      - meta           # 元文档（AGENTS.md、ARCHITECTURE.md 等）
+    required: true
+
+  # === 描述信息 ===
+  title:
+    description: "Artifact 标题（人类可读）"
+    type: string
+    required: true
+    example: "F22 通知推送系统规格"
+
+  domain:
+    description: "所属业务域"
+    type: string
+    required: false
+    source: "context.feature.domain"
+    example: "notification"
+
+  # === 状态管理 ===
+  status:
+    description: "Artifact 生命周期状态"
+    type: string
+    enum:
+      - draft        # 草稿，尚未评审
+      - reviewed     # 已评审，待实现
+      - active       # 正在实现中（仅 task 类型）
+      - passing      # 已通过验证（仅 task 类型）
+      - deprecated   # 已废弃，被新版本替代
+      - archived     # 已归档，不再活跃
+    required: true
+    default: draft
+
+  version:
+    description: "Artifact 版本"
+    type: string
+    format: "semver"
+    required: true
+    default: "1.0.0"
+    example: "1.0.0"
+
+  # === 来源追踪 ===
+  source:
+    description: "Artifact 的来源信息"
+    type: object
+    required: true
+    properties:
+      skill:
+        description: "生成此 Artifact 的 Skill"
+        type: string
+        enum:
+          - harness-init
+          - harness-init-docs
+          - harness-clarify
+          - harness-specify
+          - harness-specify-arch
+          - harness-order
+          - harness-change
+          - harness-analyze
+          - harness-execute
+          - harness-verify
+          - harness-project-memory
+          - manual         # 人工创建
+        example: "harness-specify"
+
+      feature_id:
+        description: "关联的功能 ID（如 F22）"
+        type: string
+        required: false
+        source: "context.feature.id"
+        example: "F22"
+
+      created:
+        description: "创建时间（ISO 8601）"
+        type: string
+        format: "date-time"
+        example: "2026-06-24T15:30:00+08:00"
+
+      updated:
+        description: "最后更新时间（ISO 8601）"
+        type: string
+        format: "date-time"
+        example: "2026-06-24T16:00:00+08:00"
+
+  # === 关联关系 ===
+  dependencies:
+    description: "此 Artifact 依赖的其他 Artifact ID 列表"
+    type: array
+    items:
+      type: string
+    required: false
+    default: []
+    examples:
+      - ["F22-proposal"]           # specs 依赖 proposal
+      - ["F22-specs", "F22-design"] # task 依赖 specs 和 design
+
+  related_artifacts:
+    description: "相关但不构成依赖的 Artifact ID 列表"
+    type: array
+    items:
+      type: string
+    required: false
+    default: []
+    examples:
+      - ["api-contract-v2"]       # specs 关联 API 契约
+      - ["notification-domain-map"] # task 关联域映射
+
+  # === 扩展字段 ===
+  # 各类型 Artifact 在 Meta 层之上扩展自己的 Schema
+  # 例如 spec 扩展 requirements、acceptance_criteria 等
+  # 例如 task 扩展 objective、implementation_steps 等
+```
+
+---
+
+## 使用规则
+
+### 规则 1：所有 Artifact 必须包含 Meta 层
+
+```markdown
+---
+artifact:
+  id: F22-specs
+  type: spec
+  title: F22 通知推送系统规格
+  domain: notification
+  status: reviewed
+  version: "1.0.0"
+  source:
+    skill: harness-specify
+    feature_id: F22
+    created: "2026-06-24T15:30:00+08:00"
+    updated: "2026-06-24T15:30:00+08:00"
+  dependencies: ["F22-proposal"]
+  related_artifacts: ["api-contract-v2"]
+---
+
+# F22 通知推送系统规格
+
+## 需求
+...
+```
+
+### 规则 2：ID 命名规范
+
+| 类型 | 格式 | 示例 |
+|------|------|------|
+| spec | `{feature_id}-specs` | `F22-specs` |
+| task | `{feature_id}-order-{seq}` | `F22-order-001` |
+| design | `{feature_id}-design` | `F22-design` |
+| architecture | `{domain}-{artifact-type}` | `notification-domain-map` |
+| proposal | `{feature_id}-proposal` | `F22-proposal` |
+| report | `{feature_id}-report-{type}` | `F22-validation-report` |
+
+### 规则 3：状态流转
+
+```
+draft → reviewed → active → passing → archived
+   ↓        ↓         ↓
+deprecated deprecated deprecated
+```
+
+- `draft`：Skill 刚生成，尚未评审
+- `reviewed`：通过 harness-verify 或人工评审
+- `active`：task 正在被实现
+- `passing`：task 通过验证
+- `deprecated`：被新版本替代
+- `archived`：不再活跃，但保留历史
+
+### 规则 4：依赖图约束
+
+- Artifact 的 `dependencies` 必须构成 DAG，禁止循环依赖
+- Skill 读取 Artifact 时，必须确保其 `dependencies` 已存在
+- `related_artifacts` 不强制存在，仅用于导航
+
+### 规则 5：与 Context Contract 的关系
+
+```
+Context Contract（项目环境）
+    ↓ 提供
+artifact.source.feature_id → context.feature.id
+artifact.domain → context.feature.domain
+    ↓
+Artifact Meta（产物身份）
+    ↓ 扩展
+Spec Schema / Task Schema / Architecture Schema（产物内容）
+```
+
+- **Context Contract** 描述"项目是什么"
+- **Artifact Meta** 描述"产物是谁"
+- **Type Schema** 描述"产物包含什么"
+
+---
+
+## 示例：完整 Artifact
+
+### 规格文档（Spec）
+
+```markdown
+---
+artifact:
+  id: F22-specs
+  type: spec
+  title: F22 通知推送系统规格
+  domain: notification
+  status: reviewed
+  version: "1.0.0"
+  source:
+    skill: harness-specify
+    feature_id: F22
+    created: "2026-06-24T15:30:00+08:00"
+    updated: "2026-06-24T15:30:00+08:00"
+  dependencies: ["F22-proposal"]
+  related_artifacts: ["api-contract-v2", "notification-domain-map"]
+---
+
+# F22 通知推送系统规格
+
+## 概述
+...
+
+## 需求
+...
+```
+
+### 工单（Task）
+
+```markdown
+---
+artifact:
+  id: F22-order-001
+  type: task
+  title: F22 通知推送系统 — 核心服务实现
+  domain: notification
+  status: not_started
+  version: "1.0.0"
+  source:
+    skill: harness-order
+    feature_id: F22
+    created: "2026-06-24T16:00:00+08:00"
+    updated: "2026-06-24T16:00:00+08:00"
+  dependencies: ["F22-specs"]
+  related_artifacts: ["F22-design", "api-contract-v2"]
+---
+
+# 工单 F22-order-001
+
+## 功能三元组
+...
+```
+
+---
+
+## 验证清单
+
+- [ ] 所有产物文件包含 YAML Front Matter 中的 `artifact` 块
+- [ ] `artifact.id` 全局唯一
+- [ ] `artifact.type` 在枚举范围内
+- [ ] `artifact.dependencies` 无循环依赖
+- [ ] `artifact.source.skill` 在枚举范围内
+- [ ] `artifact.status` 流转符合状态机
+
+## 引用完整性校验规则
+
+所有 Artifact 类型必须遵守以下引用校验规则：
+
+### 规则 6：ID 引用必须存在
+
+| 引用方 | 被引用方 | 引用字段 | 校验规则 |
+|--------|----------|----------|----------|
+| Task | Spec | `requirement_refs[].requirement_id` | 必须匹配 `Spec.requirements[].id` |
+| Task | Spec | `requirement_refs[].scenario_ids[]` | 必须匹配 `Spec.requirements[].scenarios[].id` |
+| Task | Spec | `validation_steps[].acceptance_criteria_ids[]` | 必须匹配 `Spec.acceptance_criteria[].id` |
+| Task | Architecture | `constraints.constraint_refs[]` | 必须匹配 `Architecture.constraints[].id` |
+| Architecture | Spec | `constraints[].related_requirements[]` | 必须匹配 `Spec.requirements[].id` |
+| Architecture | Architecture | `constraints[].related_modules[]` | 必须匹配 `Architecture.modules[].id` |
+| Architecture | Architecture | `modules[].dependencies[]` | 必须匹配 `Architecture.modules[].id` |
+| Architecture | Architecture | `interfaces[].source` / `target` | 必须匹配 `Architecture.modules[].id` |
+| All | All | `artifact.dependencies[]` | 必须匹配已存在的 `artifact.id` |
+| All | All | `artifact.related_artifacts[]` | 必须匹配已存在的 `artifact.id` |
+
+### 规则 7：ID 格式校验
+
+| ID 类型 | 格式 | 示例 |
+|---------|------|------|
+| Requirement | `REQ-{domain}-{seq:03d}` | REQ-NOT-001 |
+| Scenario | `SC-{req_id}-{seq:02d}` | SC-REQ-NOT-001-01 |
+| Acceptance Criteria | `AC-{domain}-{seq:03d}` | AC-NOT-001 |
+| Business Rule | `BR-{domain}-{seq:03d}` | BR-NOT-001 |
+| User Flow | `UF-{domain}-{seq:03d}` | UF-NOT-001 |
+| API Change | `API-{domain}-{seq:03d}` | API-NOT-001 |
+| Data Change | `DATA-{domain}-{seq:03d}` | DATA-NOT-001 |
+| Task | `{feature_id}-order-{seq:03d}` | F22-order-001 |
+| Step | `STEP-{task_id}-{seq:03d}` | STEP-F22-001-001 |
+| Validation | `VAL-{task_id}-{seq:03d}` | VAL-F22-001-001 |
+| DoD | `DOD-{task_id}-{seq:03d}` | DOD-F22-001-001 |
+| Risk | `RISK-{task_id}-{seq:03d}` | RISK-F22-001-001 |
+| Module | `MOD-{domain}-{seq:03d}` | MOD-NOT-001 |
+| Interface | `IF-{domain}-{seq:03d}` | IF-NOT-001 |
+| Data Model | `DM-{domain}-{seq:03d}` | DM-NOT-001 |
+| Constraint | `CON-{domain}-{seq:03d}` | CON-NOT-001 |
+| ADR | `ADR-{seq:03d}` | ADR-001 |
+
+### 规则 8：引用校验执行时机
+
+- **生成时**：Skill 生成 Artifact 时，必须验证所有自引用 ID 的格式正确性
+- **评审时**：harness-verify 必须验证所有跨 Artifact 引用的目标存在性
+- **执行时**：harness-execute 必须验证 Task 引用的 Architecture 约束是否被遵守
+
+---
+
+## 与现有模板的映射
+
+| 现有模板 | 对应 Artifact Type | 当前变量 | 映射到 Meta 字段 |
+|----------|-------------------|----------|-----------------|
+| `specs/spec.md` | `spec` | `{{domain}}` | `artifact.domain` |
+| `specs/spec.md` | `spec` | `{{name}}` | `artifact.title` |
+| `changes/proposal.md` | `proposal` | `{{change_name}}` | `artifact.id` |
+| `changes/delta-spec.md` | `spec` | `{{domain}}` | `artifact.domain` |
+| `changes/tasks.md` | `task` | `{{change_name}}` | `artifact.id` |
+| `changes/design.md` | `design` | `{{change_name}}` | `artifact.id` |
+| `orders/order.md` | `task` | `{{id}}` | `artifact.id` |
+| `orders/order.md` | `task` | `{{title}}` | `artifact.title` |
+| `architecture/*.md` | `architecture` | `{{project_name}}` | `context.project.name` |
+
+---
+
+## 下一步
+
+Phase 2.1：在 Artifact Meta Schema 之上设计 **Spec Schema**
+- 定义 `spec` 类型的内容结构（requirements, acceptance_criteria 等）
+
+Phase 2.2：在 Artifact Meta Schema 之上设计 **Task Schema**
+- 定义 `task` 类型的内容结构（objective, implementation_steps 等）
+
+Phase 2.3：在 Artifact Meta Schema 之上设计 **Architecture Schema**
+- 定义 `architecture` 类型的内容结构（modules, interfaces 等）

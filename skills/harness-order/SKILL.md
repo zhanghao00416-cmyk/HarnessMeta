@@ -71,20 +71,20 @@ F04（依赖 F02, F03）
 
 | 模板变量 | 数据来源 |
 |---------|----------|
-| `{{id}}` | `features[].id` |
-| `{{title}}` | `features[].title` |
-| `{{status}}` | 初始为 `not_started` |
-| `{{dependencies}}` | `features[].dependencies` |
-| `{{patches}}` | 初始为"无" |
-| `{{supersedes}}` | 初始为"无" |
-| `{{superseded_by}}` | 初始为"无" |
-| `{{behavior_brief}}` | `features[].behavior` + 对应 `docs/specs/` 中的需求（一句话摘要） |
-| `{{verify_command}}` | `features[].verify_command` 或 `verify_commands.health_check` |
-| `{{code_deps}}` | 从依赖工单的产出推断文件路径（无依赖则填"无跨工单硬代码依赖"） |
-| `{{required_docs}}` | `features[].docs` + 通用必读文档（ARCHITECTURE.md、AGENTS.md）+ 对应规格文档（步骤 3 已生成的域规格/架构规格） |
-| `{{implementation_plan}}` | 从规格文档和架构规格推断的文件清单（路径 + 职责表格式），执行阶段可微调 |
+| `{{context.feature.id}}` | `features[].id` |
+| `{{context.feature.name}}` | `features[].title` |
+| `{{context.task.status}}` | 初始为 `not_started` |
+| `{{context.feature.dependencies}}` | `features[].dependencies` |
+| `{{context.task.patches}}` | 初始为"无" |
+| `{{context.task.supersedes}}` | 初始为"无" |
+| `{{context.task.superseded_by}}` | 初始为"无" |
+| `{{context.feature.behavior}}` | `features[].behavior` + 对应 `docs/specs/` 中的需求（一句话摘要） |
+| `{{context.feature.verify_command}}` | `features[].verify_command` 或 `context.project.verify_commands.health_check` |
+| `{{context.task.code_deps}}` | 从依赖工单的产出推断文件路径（无依赖则填"无跨工单硬代码依赖"） |
+| `{{context.task.required_docs}}` | `features[].docs` + 通用必读文档（ARCHITECTURE.md、AGENTS.md）+ 对应规格文档（步骤 3 已生成的域规格/架构规格） |
+| `{{context.task.implementation_plan}}` | 从规格文档和架构规格推断的文件清单（路径 + 职责表格式），执行阶段可微调 |
 
-**输出路径**：`orders/{{id}}_{{kebab_title}}.md`
+**输出路径**：`orders/{{context.feature.id}}_{{kebab_title}}.md`
 
 ### 4. 更新 DEPENDENCY_MAP.md
 
@@ -148,10 +148,10 @@ F04（依赖 F02, F03）
 **分批模式**（每批完成后输出）：
 
 ```
-## 批次 {{batch}}/{{total_batches}} 完成
+## 批次 {{context.session.batch_number}}/{{context.session.total_batches}} 完成
 
-已生成：{{batch_count}} 个工单（F{{start}}–F{{end}}）
-累计：{{cumulative_count}} / {{total}} 个工单
+已生成：{{context.session.batch_count}} 个工单（F{{context.session.batch_start}}–F{{context.session.batch_end}}）
+累计：{{context.session.cumulative_count}} / {{context.session.total_count}} 个工单
 
 | 工单 | 标题 | 依赖 | 验证命令 |
 |------|------|------|----------|
@@ -165,8 +165,8 @@ F04（依赖 F02, F03）
 ```
 ## 工单生成完成
 
-已生成：{{count}} 个工单（{{batch_count}} 批）
-执行顺序：{{order_summary}}
+已生成：{{context.session.total_count}} 个工单（{{context.session.batch_count}} 批）
+执行顺序：{{context.session.order_summary}}
 
 下一步：按顺序执行工单（或使用 harness-execute）
 ```

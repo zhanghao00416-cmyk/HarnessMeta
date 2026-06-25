@@ -1,0 +1,700 @@
+# Architecture Schema
+
+> **版本**：v1.0-frozen
+> **状态**：Frozen（2026-06-24 冻结）
+> **冻结依据**：Phase 2 Artifact Chain Review v2.0 通过（总分 9.25/10，复审修复了 related_requirements: required + validation 规则）
+> **依赖**：Artifact Meta Schema v1.0-frozen、Spec Schema v1.0-frozen、Task Schema v1.0-frozen
+> **职责**：定义技术约束与系统结构（Constraints）—— 描述系统应该如何组织、允许什么、禁止什么
+>
+> 设计目标：
+> - **约束明确**：为 harness-execute、harness-review-loop、harness-verify 提供可执行的约束规则
+> - **结构清晰**：定义模块边界、接口协议、数据模型引用
+> - **可追踪**：通过 traceability 关联到需求和任务，形成双向追踪
+>
+> ⚠️ **Frozen Schema**：本文件已冻结。任何修改必须遵循 Schema Change Policy（见 schema-change-policy.md），
+> 不得直接修改字段语义、删除字段或修改必填规则。
+
+---
+
+## 设计原则
+
+1. **只描述约束，不描述实现**
+   - ✅ 正确："Service 层不得直接访问数据库"
+   - ❌ 错误："使用 Repository 模式封装数据库访问"（这是 Task 的职责）
+
+2. **只描述结构，不描述需求**
+   - ✅ 正确："notification 模块负责通知发送"
+   - ❌ 错误："用户可以通过邮件接收通知"（这是 Spec 的职责）
+
+3. **约束可执行**
+   - 每个约束应该能被代码审查或静态分析验证
+   - 避免模糊的"尽量"、"建议"等不可验证的表述
+
+4. **与 Spec/Task 边界清晰**
+   - Architecture 不重复需求内容，只引用需求 ID
+   - Architecture 不定义实现步骤，只定义约束规则
+
+---
+
+## Schema 定义
+
+```yaml
+architecture:
+  # === 继承自 Artifact Meta ===
+  # artifact.id, artifact.type, artifact.title, artifact.domain,
+  # artifact.status, artifact.version, artifact.source,
+  # artifact.dependencies, artifact.related_artifacts
+  # 见 artifact-meta-schema.yaml
+
+  # === 系统概述 ===
+  overview:
+    description: "系统架构概述（1-2 段）"
+    type: string
+    required: true
+    example: |
+      通知推送系统采用分层架构，包含 API 层、Service 层、Domain 层和 Infrastructure 层。
+      所有通知通过统一的事件队列分发，支持多渠道并行发送。
+
+  # === 模块定义 ===
+  modules:
+    description: "系统模块列表"
+    type: array
+    required: true
+    items:
+      type: object
+      properties:
+        id:
+          description: "模块唯一标识"
+          type: string
+          format: "MOD-{domain}-{seq:03d}"
+          required: true
+          example: "MOD-NOT-001"
+
+        name:
+          description: "模块名称"
+          type: string
+          required: true
+          example: "notification"
+
+        responsibility:
+          description: "模块职责（一句话）"
+          type: string
+          required: true
+          example: "负责通知事件的接收、路由和发送"
+
+        layer:
+          description: "所属架构层"
+          type: string
+          enum: [api, service, domain, infrastructure, cross_cutting]
+          required: true
+          example: "service"
+
+        interfaces:
+          description: "对外提供的接口"
+          type: array
+          required: false
+          items:
+            type: object
+            properties:
+              name:
+                description: "接口名称"
+                type: string
+                required: true
+                example: "NotificationService.send()"
+
+              protocol:
+                description: "接口协议"
+                type: string
+                enum: [http, grpc, message_queue, internal_api, event]
+                required: true
+                example: "internal_api"
+
+              description:
+                description: "接口描述"
+                type: string
+                required: true
+                example: "接收通知事件并触发发送流程"
+
+        dependencies:
+          description: "依赖的其他模块"
+          type: array
+          required: false
+          items:
+            type: string
+          example: ["MOD-NOT-002", "MOD-INF-001"]
+
+        constraints:
+          description: "模块级约束"
+          type: array
+          required: false
+          items:
+            type: string
+          example: ["不得直接调用外部 HTTP API"]
+
+  # === 接口定义 ===
+  interfaces:
+    description: "模块间接口列表"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        id:
+          description: "接口唯一标识"
+          type: string
+          format: "IF-{domain}-{seq:03d}"
+          required: true
+          example: "IF-NOT-001"
+
+        source:
+          description: "调用方模块 ID"
+          type: string
+          required: true
+          example: "MOD-NOT-001"
+
+        target:
+          description: "被调用方模块 ID"
+          type: string
+          required: true
+          example: "MOD-NOT-002"
+
+        protocol:
+          description: "通信协议"
+          type: string
+          enum: [http, grpc, message_queue, internal_api, event, database]
+          required: true
+          example: "message_queue"
+
+        description:
+          description: "接口描述"
+          type: string
+          required: true
+          example: "通知事件通过消息队列分发到发送器"
+
+        constraints:
+          description: "接口级约束"
+          type: array
+          required: false
+          items:
+            type: string
+          example: ["消息必须包含 trace_id", "失败消息必须进入死信队列"]
+
+  # === 数据模型引用 ===
+  data_model_refs:
+    description: "数据模型引用（不定义字段，只引用）"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        id:
+          description: "模型引用唯一标识"
+          type: string
+          format: "DM-{domain}-{seq:03d}"
+          required: true
+          example: "DM-NOT-001"
+
+        name:
+          description: "模型名称"
+          type: string
+          required: true
+          example: "NotificationRecord"
+
+        type:
+          description: "模型类型"
+          type: string
+          enum: [entity, value_object, aggregate, repository, dto, event]
+          required: true
+          example: "entity"
+
+        responsibility:
+          description: "模型职责"
+          type: string
+          required: true
+          example: "存储通知发送历史和状态"
+
+        owner_module:
+          description: "所属模块 ID"
+          type: string
+          required: true
+          example: "MOD-NOT-001"
+
+        # 注意：不包含字段定义、索引、约束等实现细节
+        # 这些属于 DATA_MODEL.md 的具体实现文档
+
+        related_requirements:
+          description: "关联的需求 ID"
+          type: array
+          items:
+            type: string
+          required: false
+          example: ["REQ-NOT-001"]
+
+  # === 部署影响 ===
+  deployment_impact:
+    description: "部署影响分析"
+    type: object
+    required: false
+    properties:
+      new_services:
+        description: "新增服务"
+        type: array
+        required: false
+        items:
+          type: object
+          properties:
+            name:
+              description: "服务名称"
+              type: string
+              required: true
+              example: "notification-worker"
+
+            type:
+              description: "服务类型"
+              type: string
+              enum: [api, worker, cron, consumer]
+              required: true
+              example: "worker"
+
+            description:
+              description: "服务描述"
+              type: string
+              required: true
+              example: "通知发送工作进程"
+
+      config_changes:
+        description: "配置变更"
+        type: array
+        required: false
+        items:
+          type: object
+          properties:
+            key:
+              description: "配置键"
+              type: string
+              required: true
+              example: "SMTP_HOST"
+
+            description:
+              description: "配置说明"
+              type: string
+              required: true
+              example: "SMTP 服务器地址"
+
+            required:
+              description: "是否必填"
+              type: boolean
+              required: true
+              default: true
+              example: true
+
+      infrastructure_changes:
+        description: "基础设施变更"
+        type: array
+        required: false
+        items:
+          type: object
+          properties:
+            resource:
+              description: "资源类型"
+              type: string
+              enum: [database, cache, queue, storage, network]
+              required: true
+              example: "queue"
+
+            description:
+              description: "变更描述"
+              type: string
+              required: true
+              example: "新增通知事件队列"
+
+  # === 约束列表 ===
+  constraints:
+    description: "系统级约束（最重要部分）"
+    type: array
+    required: true
+    items:
+      type: object
+      properties:
+        id:
+          description: "约束唯一标识"
+          type: string
+          format: "CON-{domain}-{seq:03d}"
+          required: true
+          example: "CON-NOT-001"
+
+        type:
+          description: "约束类型"
+          type: string
+          enum: [architecture, security, performance, reliability, data, compliance, testing]
+          required: true
+          example: "architecture"
+
+        rule:
+          description: "约束规则（可验证的表述）"
+          type: string
+          required: true
+          example: "Service 层不得直接访问数据库，必须通过 Repository 接口"
+
+        severity:
+          description: "违反后果"
+          type: string
+          enum: [block, warning, info]
+          required: true
+          default: block
+          example: "block"
+          notes: |
+            block: 违反会导致架构评审失败，必须修复
+            warning: 违反会触发警告，建议修复
+            info: 违反仅记录，不阻塞流程
+
+        verification:
+          description: "验证方法"
+          type: string
+          enum: [code_review, static_analysis, runtime_check, manual_review]
+          required: true
+          example: "code_review"
+
+        related_modules:
+          description: "关联的模块 ID"
+          type: array
+          items:
+            type: string
+          required: false
+          example: ["MOD-NOT-001"]
+
+        related_requirements:
+          description: "关联的需求 ID（至少关联一个需求或模块）"
+          type: array
+          items:
+            type: string
+          required: true
+          example: ["REQ-NOT-001"]
+
+        validation:
+          description: "约束关联性验证"
+          rule: "len(related_requirements) > 0 OR len(related_modules) > 0"
+          error: "每个约束必须至少关联一个需求或一个模块"
+
+  # === 架构决策引用 ===
+  decisions:
+    description: "架构决策引用（ADR）"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        id:
+          description: "决策唯一标识"
+          type: string
+          format: "ADR-{seq:03d}"
+          required: true
+          example: "ADR-001"
+
+        title:
+          description: "决策标题"
+          type: string
+          required: true
+          example: "使用消息队列处理通知事件"
+
+        status:
+          description: "决策状态"
+          type: string
+          enum: [proposed, accepted, deprecated, superseded]
+          required: true
+          default: accepted
+          example: "accepted"
+
+        context:
+          description: "决策背景"
+          type: string
+          required: false
+          example: "通知系统需要支持高并发发送，同步处理会阻塞主流程"
+
+        decision:
+          description: "决策内容"
+          type: string
+          required: true
+          example: "使用 Redis Stream 作为消息队列，异步处理通知事件"
+
+        consequences:
+          description: "决策后果"
+          type: string
+          required: false
+          example: "增加系统复杂度，但提升吞吐量和可靠性"
+
+        related_requirements:
+          description: "关联的需求 ID"
+          type: array
+          items:
+            type: string
+          required: false
+          example: ["REQ-NOT-001"]
+
+  # === 追踪信息 ===
+  traceability:
+    description: "架构追踪矩阵"
+    type: object
+    required: true
+    properties:
+      requirement_ids:
+        description: "本 Architecture 约束关联的需求 ID"
+        type: array
+        items:
+          type: string
+        required: true
+        example: ["REQ-NOT-001", "REQ-NOT-002"]
+
+      task_ids:
+        description: "受本 Architecture 约束影响的 Task ID"
+        type: array
+        items:
+          type: string
+        required: false
+        example: ["F22-order-001", "F22-order-002"]
+
+      upstream:
+        description: "上游关联"
+        type: array
+        required: false
+        items:
+          type: object
+          properties:
+            type:
+              description: "上游类型"
+              type: string
+              enum: [spec, feature_catalog]
+              required: true
+
+            id:
+              description: "上游标识"
+              type: string
+              required: true
+              example: "F22-specs"
+
+      downstream:
+        description: "下游关联（由 harness-order/harness-execute 填充）"
+        type: array
+        required: false
+        items:
+          type: object
+          properties:
+            type:
+              description: "下游类型"
+              type: string
+              enum: [task, code_module, test_case]
+              required: true
+
+            id:
+              description: "下游标识"
+              type: string
+              required: true
+              example: "F22-order-001"
+```
+
+---
+
+## 与现有模板的映射
+
+| 现有模板 | 当前结构 | 映射到 Architecture Schema |
+|----------|----------|---------------------------|
+| `architecture/API_CONTRACT.md` | `## 概述` | `architecture.overview` |
+| `architecture/API_CONTRACT.md` | `## 端点注册表` | `architecture.modules[].interfaces` |
+| `architecture/DATA_MODEL.md` | `## 主数据库表` | `architecture.data_model_refs` |
+| `architecture/DOMAIN_MAP.md` | `## 域注册表` | `architecture.modules` |
+| `architecture/DOMAIN_MAP.md` | `## 域间调用规则` | `architecture.interfaces` |
+| `architecture/DEPLOYMENT.md` | `## 新增服务` | `architecture.deployment_impact.new_services` |
+| `architecture/ERROR_CODE.md` | `## 错误码范围` | `architecture.constraints` (type: compliance) |
+| `templates/meta/ARCHITECTURE.md` | `## 架构原则` | `architecture.constraints` (type: architecture) |
+
+---
+
+## 示例：完整 Architecture
+
+```markdown
+---
+artifact:
+  id: notification-architecture
+  type: architecture
+  title: 通知推送系统架构规格
+  domain: notification
+  status: reviewed
+  version: "1.0.0"
+  source:
+    skill: harness-specify-arch
+    feature_id: F22
+    created: "2026-06-24T17:00:00+08:00"
+    updated: "2026-06-24T17:00:00+08:00"
+  dependencies: ["F22-specs"]
+  related_artifacts: ["api-contract-v2", "data-model-v2"]
+---
+
+# 通知推送系统架构规格
+
+## 概述
+
+通知推送系统采用分层架构，包含 API 层、Service 层、Domain 层和 Infrastructure 层。
+所有通知通过统一的事件队列分发，支持多渠道并行发送。
+
+## 模块
+
+### MOD-NOT-001：notification
+
+**职责**：负责通知事件的接收、路由和发送
+**层**：service
+
+**接口**：
+- NotificationService.send()
+  - 协议：internal_api
+  - 描述：接收通知事件并触发发送流程
+
+**依赖**：MOD-NOT-002, MOD-INF-001
+
+**约束**：
+- 不得直接调用外部 HTTP API
+
+### MOD-NOT-002：channel-sender
+
+**职责**：负责具体渠道（邮件、短信）的发送实现
+**层**：infrastructure
+
+## 接口
+
+### IF-NOT-001：notification → channel-sender
+
+**协议**：message_queue
+**描述**：通知事件通过消息队列分发到发送器
+**约束**：
+- 消息必须包含 trace_id
+- 失败消息必须进入死信队列
+
+## 数据模型引用
+
+### DM-NOT-001：NotificationRecord
+
+**类型**：entity
+**职责**：存储通知发送历史和状态
+**所属模块**：MOD-NOT-001
+**关联需求**：REQ-NOT-001
+
+## 部署影响
+
+### 新增服务
+
+| 服务 | 类型 | 描述 |
+|------|------|------|
+| notification-worker | worker | 通知发送工作进程 |
+
+### 配置变更
+
+| 配置键 | 说明 | 必填 |
+|--------|------|------|
+| SMTP_HOST | SMTP 服务器地址 | 是 |
+
+### 基础设施变更
+
+| 资源 | 变更 |
+|------|------|
+| queue | 新增通知事件队列 |
+
+## 约束
+
+### CON-NOT-001：分层访问约束
+
+**类型**：architecture
+**规则**：Service 层不得直接访问数据库，必须通过 Repository 接口
+**违反后果**：block
+**验证方法**：code_review
+**关联模块**：MOD-NOT-001
+**关联需求**：REQ-NOT-001
+
+### CON-NOT-002：消息可靠性约束
+
+**类型**：reliability
+**规则**：所有通知事件必须持久化到数据库后才能确认消费
+**违反后果**：block
+**验证方法**：code_review
+**关联模块**：MOD-NOT-001
+**关联需求**：REQ-NOT-001
+
+## 架构决策
+
+### ADR-001：使用消息队列处理通知事件
+
+**状态**：accepted
+**背景**：通知系统需要支持高并发发送，同步处理会阻塞主流程
+**决策**：使用 Redis Stream 作为消息队列，异步处理通知事件
+**后果**：增加系统复杂度，但提升吞吐量和可靠性
+**关联需求**：REQ-NOT-001
+
+## 追踪矩阵
+
+**关联需求**：
+- REQ-NOT-001
+- REQ-NOT-002
+
+**受影响任务**：
+- F22-order-001
+- F22-order-002
+
+**上游**：
+- spec: F22-specs
+
+**下游**：（待 harness-order/harness-execute 填充）
+```
+
+---
+
+## 与下游消费方的关系
+
+```
+Architecture Schema（Constraints）
+  ├── constraints[]
+  │     ├── CON-NOT-001: Service 层不得直接访问数据库
+  │     │     └── verification: code_review
+  │     │     └── related_requirements: [REQ-NOT-001]
+  │     │
+  │     └── CON-NOT-002: 消息必须持久化后确认
+  │           └── verification: code_review
+  │           └── related_requirements: [REQ-NOT-001]
+  │
+  └── traceability.task_ids[]
+        └── F22-order-001  ←── Task 执行时读取约束
+
+Task Schema（How）
+  ├── constraints.architecture_rules[]
+  │     └── "Service 层不得直接访问数据库"  ←── 引用 Architecture 约束
+  │
+  └── validation_steps[]
+        └── 验证 Architecture 约束是否被遵守
+
+Verify Schema（验证）
+  ├── 读取 Architecture.constraints
+  ├── 读取 Task.implementation_steps
+  └── 验证：实现是否遵守约束？
+```
+
+---
+
+## 验证清单
+
+- [ ] 每个约束有唯一 ID（CON-{domain}-{seq}）
+- [ ] 每个约束有可验证的规则（避免模糊表述）
+- [ ] 每个约束有验证方法（code_review / static_analysis / runtime_check / manual_review）
+- [ ] 每个约束有违反后果（block / warning / info）
+- [ ] 不重复定义需求（引用 Spec 的需求 ID）
+- [ ] 不定义实现步骤（只定义约束规则）
+- [ ] 数据模型只引用，不定义字段细节
+- [ ] traceability.requirement_ids 非空
+- [ ] 模块依赖构成 DAG，无循环依赖
+
+---
+
+## 下一步
+
+Phase 2.4：Artifact Chain Review（验证完整链路）
+- 验证 Artifact Meta → Spec → Task → Architecture 的完整追踪链路
+- 确认三层职责边界清晰，无重叠
+- 确认双向追踪机制可行
+
+完成后进入 Phase 3：Verify Schema（三者的最终消费者）

@@ -1,0 +1,2831 @@
+artifact:
+  id: ORD-specs
+  type: spec
+  title: 电商订单系统规格
+  domain: order
+  status: reviewed
+  version: 1.0.0
+overview: 大型电商订单系统，支持下单、支付、物流、退款、评价等完整订单生命周期。日订单量 100 万+。
+requirements:
+- id: REQ-ORD-001
+  title: 订单创建
+  description: 用户可以通过前端页面创建新订单，选择商品和数量
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-001-01
+    given: 前置条件 1-A
+    when: 触发动作 1-A
+    then: 预期结果 1-A
+    acceptance_criteria:
+    - 验收标准 1-A1：响应时间 < 500ms
+    - 验收标准 1-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-001-02
+    given: 前置条件 1-B
+    when: 触发动作 1-B
+    then: 预期结果 1-B
+    acceptance_criteria:
+    - 验收标准 1-B1：并发 1000 TPS
+    - 验收标准 1-B2：数据一致性保证
+- id: REQ-ORD-002
+  title: 订单支付
+  description: 用户可以通过微信/支付宝完成订单支付
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-002-01
+    given: 前置条件 2-A
+    when: 触发动作 2-A
+    then: 预期结果 2-A
+    acceptance_criteria:
+    - 验收标准 2-A1：响应时间 < 500ms
+    - 验收标准 2-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-002-02
+    given: 前置条件 2-B
+    when: 触发动作 2-B
+    then: 预期结果 2-B
+    acceptance_criteria:
+    - 验收标准 2-B1：并发 1000 TPS
+    - 验收标准 2-B2：数据一致性保证
+- id: REQ-ORD-003
+  title: 支付回调
+  description: 支付成功后系统自动更新订单状态为已支付
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-003-01
+    given: 前置条件 3-A
+    when: 触发动作 3-A
+    then: 预期结果 3-A
+    acceptance_criteria:
+    - 验收标准 3-A1：响应时间 < 500ms
+    - 验收标准 3-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-003-02
+    given: 前置条件 3-B
+    when: 触发动作 3-B
+    then: 预期结果 3-B
+    acceptance_criteria:
+    - 验收标准 3-B1：并发 1000 TPS
+    - 验收标准 3-B2：数据一致性保证
+- id: REQ-ORD-004
+  title: 订单取消
+  description: 用户可以在支付前取消订单
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-004-01
+    given: 前置条件 4-A
+    when: 触发动作 4-A
+    then: 预期结果 4-A
+    acceptance_criteria:
+    - 验收标准 4-A1：响应时间 < 500ms
+    - 验收标准 4-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-004-02
+    given: 前置条件 4-B
+    when: 触发动作 4-B
+    then: 预期结果 4-B
+    acceptance_criteria:
+    - 验收标准 4-B1：并发 1000 TPS
+    - 验收标准 4-B2：数据一致性保证
+- id: REQ-ORD-005
+  title: 超时取消
+  description: 未支付订单 30 分钟后自动取消
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-005-01
+    given: 前置条件 5-A
+    when: 触发动作 5-A
+    then: 预期结果 5-A
+    acceptance_criteria:
+    - 验收标准 5-A1：响应时间 < 500ms
+    - 验收标准 5-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-005-02
+    given: 前置条件 5-B
+    when: 触发动作 5-B
+    then: 预期结果 5-B
+    acceptance_criteria:
+    - 验收标准 5-B1：并发 1000 TPS
+    - 验收标准 5-B2：数据一致性保证
+- id: REQ-ORD-006
+  title: 订单查询
+  description: 用户可以按时间范围查询历史订单
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-006-01
+    given: 前置条件 6-A
+    when: 触发动作 6-A
+    then: 预期结果 6-A
+    acceptance_criteria:
+    - 验收标准 6-A1：响应时间 < 500ms
+    - 验收标准 6-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-006-02
+    given: 前置条件 6-B
+    when: 触发动作 6-B
+    then: 预期结果 6-B
+    acceptance_criteria:
+    - 验收标准 6-B1：并发 1000 TPS
+    - 验收标准 6-B2：数据一致性保证
+- id: REQ-ORD-007
+  title: 订单详情
+  description: 用户可以查看单个订单的完整信息
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-007-01
+    given: 前置条件 7-A
+    when: 触发动作 7-A
+    then: 预期结果 7-A
+    acceptance_criteria:
+    - 验收标准 7-A1：响应时间 < 500ms
+    - 验收标准 7-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-007-02
+    given: 前置条件 7-B
+    when: 触发动作 7-B
+    then: 预期结果 7-B
+    acceptance_criteria:
+    - 验收标准 7-B1：并发 1000 TPS
+    - 验收标准 7-B2：数据一致性保证
+- id: REQ-ORD-008
+  title: 物流跟踪
+  description: 用户可以查看订单的物流配送状态
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-008-01
+    given: 前置条件 8-A
+    when: 触发动作 8-A
+    then: 预期结果 8-A
+    acceptance_criteria:
+    - 验收标准 8-A1：响应时间 < 500ms
+    - 验收标准 8-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-008-02
+    given: 前置条件 8-B
+    when: 触发动作 8-B
+    then: 预期结果 8-B
+    acceptance_criteria:
+    - 验收标准 8-B1：并发 1000 TPS
+    - 验收标准 8-B2：数据一致性保证
+- id: REQ-ORD-009
+  title: 退款申请
+  description: 用户可以对已支付订单申请退款
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-009-01
+    given: 前置条件 9-A
+    when: 触发动作 9-A
+    then: 预期结果 9-A
+    acceptance_criteria:
+    - 验收标准 9-A1：响应时间 < 500ms
+    - 验收标准 9-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-009-02
+    given: 前置条件 9-B
+    when: 触发动作 9-B
+    then: 预期结果 9-B
+    acceptance_criteria:
+    - 验收标准 9-B1：并发 1000 TPS
+    - 验收标准 9-B2：数据一致性保证
+- id: REQ-ORD-010
+  title: 退款审核
+  description: 管理员可以审核用户的退款申请
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-010-01
+    given: 前置条件 10-A
+    when: 触发动作 10-A
+    then: 预期结果 10-A
+    acceptance_criteria:
+    - 验收标准 10-A1：响应时间 < 500ms
+    - 验收标准 10-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-010-02
+    given: 前置条件 10-B
+    when: 触发动作 10-B
+    then: 预期结果 10-B
+    acceptance_criteria:
+    - 验收标准 10-B1：并发 1000 TPS
+    - 验收标准 10-B2：数据一致性保证
+- id: REQ-ORD-011
+  title: 库存扣减
+  description: 下单时自动扣减商品库存
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-011-01
+    given: 前置条件 11-A
+    when: 触发动作 11-A
+    then: 预期结果 11-A
+    acceptance_criteria:
+    - 验收标准 11-A1：响应时间 < 500ms
+    - 验收标准 11-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-011-02
+    given: 前置条件 11-B
+    when: 触发动作 11-B
+    then: 预期结果 11-B
+    acceptance_criteria:
+    - 验收标准 11-B1：并发 1000 TPS
+    - 验收标准 11-B2：数据一致性保证
+- id: REQ-ORD-012
+  title: 库存恢复
+  description: 取消订单时自动恢复商品库存
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-012-01
+    given: 前置条件 12-A
+    when: 触发动作 12-A
+    then: 预期结果 12-A
+    acceptance_criteria:
+    - 验收标准 12-A1：响应时间 < 500ms
+    - 验收标准 12-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-012-02
+    given: 前置条件 12-B
+    when: 触发动作 12-B
+    then: 预期结果 12-B
+    acceptance_criteria:
+    - 验收标准 12-B1：并发 1000 TPS
+    - 验收标准 12-B2：数据一致性保证
+- id: REQ-ORD-013
+  title: 优惠券使用
+  description: 用户可以在下单时使用优惠券
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-013-01
+    given: 前置条件 13-A
+    when: 触发动作 13-A
+    then: 预期结果 13-A
+    acceptance_criteria:
+    - 验收标准 13-A1：响应时间 < 500ms
+    - 验收标准 13-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-013-02
+    given: 前置条件 13-B
+    when: 触发动作 13-B
+    then: 预期结果 13-B
+    acceptance_criteria:
+    - 验收标准 13-B1：并发 1000 TPS
+    - 验收标准 13-B2：数据一致性保证
+- id: REQ-ORD-014
+  title: 积分抵扣
+  description: 用户可以使用积分抵扣订单金额
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-014-01
+    given: 前置条件 14-A
+    when: 触发动作 14-A
+    then: 预期结果 14-A
+    acceptance_criteria:
+    - 验收标准 14-A1：响应时间 < 500ms
+    - 验收标准 14-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-014-02
+    given: 前置条件 14-B
+    when: 触发动作 14-B
+    then: 预期结果 14-B
+    acceptance_criteria:
+    - 验收标准 14-B1：并发 1000 TPS
+    - 验收标准 14-B2：数据一致性保证
+- id: REQ-ORD-015
+  title: 发票开具
+  description: 用户可以对已完成订单申请电子发票
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-015-01
+    given: 前置条件 15-A
+    when: 触发动作 15-A
+    then: 预期结果 15-A
+    acceptance_criteria:
+    - 验收标准 15-A1：响应时间 < 500ms
+    - 验收标准 15-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-015-02
+    given: 前置条件 15-B
+    when: 触发动作 15-B
+    then: 预期结果 15-B
+    acceptance_criteria:
+    - 验收标准 15-B1：并发 1000 TPS
+    - 验收标准 15-B2：数据一致性保证
+- id: REQ-ORD-016
+  title: 订单导出
+  description: 管理员可以按条件导出订单列表为 CSV
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-016-01
+    given: 前置条件 16-A
+    when: 触发动作 16-A
+    then: 预期结果 16-A
+    acceptance_criteria:
+    - 验收标准 16-A1：响应时间 < 500ms
+    - 验收标准 16-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-016-02
+    given: 前置条件 16-B
+    when: 触发动作 16-B
+    then: 预期结果 16-B
+    acceptance_criteria:
+    - 验收标准 16-B1：并发 1000 TPS
+    - 验收标准 16-B2：数据一致性保证
+- id: REQ-ORD-017
+  title: 批量发货
+  description: 管理员可以批量更新订单为已发货
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-017-01
+    given: 前置条件 17-A
+    when: 触发动作 17-A
+    then: 预期结果 17-A
+    acceptance_criteria:
+    - 验收标准 17-A1：响应时间 < 500ms
+    - 验收标准 17-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-017-02
+    given: 前置条件 17-B
+    when: 触发动作 17-B
+    then: 预期结果 17-B
+    acceptance_criteria:
+    - 验收标准 17-B1：并发 1000 TPS
+    - 验收标准 17-B2：数据一致性保证
+- id: REQ-ORD-018
+  title: 收货确认
+  description: 用户收到商品后可以确认收货
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-018-01
+    given: 前置条件 18-A
+    when: 触发动作 18-A
+    then: 预期结果 18-A
+    acceptance_criteria:
+    - 验收标准 18-A1：响应时间 < 500ms
+    - 验收标准 18-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-018-02
+    given: 前置条件 18-B
+    when: 触发动作 18-B
+    then: 预期结果 18-B
+    acceptance_criteria:
+    - 验收标准 18-B1：并发 1000 TPS
+    - 验收标准 18-B2：数据一致性保证
+- id: REQ-ORD-019
+  title: 自动确认
+  description: 发货后 15 天自动确认收货
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-019-01
+    given: 前置条件 19-A
+    when: 触发动作 19-A
+    then: 预期结果 19-A
+    acceptance_criteria:
+    - 验收标准 19-A1：响应时间 < 500ms
+    - 验收标准 19-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-019-02
+    given: 前置条件 19-B
+    when: 触发动作 19-B
+    then: 预期结果 19-B
+    acceptance_criteria:
+    - 验收标准 19-B1：并发 1000 TPS
+    - 验收标准 19-B2：数据一致性保证
+- id: REQ-ORD-020
+  title: 评价功能
+  description: 用户可以对已收货订单进行评价
+  priority: should
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-020-01
+    given: 前置条件 20-A
+    when: 触发动作 20-A
+    then: 预期结果 20-A
+    acceptance_criteria:
+    - 验收标准 20-A1：响应时间 < 500ms
+    - 验收标准 20-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-020-02
+    given: 前置条件 20-B
+    when: 触发动作 20-B
+    then: 预期结果 20-B
+    acceptance_criteria:
+    - 验收标准 20-B1：并发 1000 TPS
+    - 验收标准 20-B2：数据一致性保证
+- id: REQ-ORD-021
+  title: 差评处理
+  description: 客服可以对差评订单进行跟进处理
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-021-01
+    given: 前置条件 21-A
+    when: 触发动作 21-A
+    then: 预期结果 21-A
+    acceptance_criteria:
+    - 验收标准 21-A1：响应时间 < 500ms
+    - 验收标准 21-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-021-02
+    given: 前置条件 21-B
+    when: 触发动作 21-B
+    then: 预期结果 21-B
+    acceptance_criteria:
+    - 验收标准 21-B1：并发 1000 TPS
+    - 验收标准 21-B2：数据一致性保证
+- id: REQ-ORD-022
+  title: 订单拆分
+  description: 多仓库商品自动拆分为子订单
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-022-01
+    given: 前置条件 22-A
+    when: 触发动作 22-A
+    then: 预期结果 22-A
+    acceptance_criteria:
+    - 验收标准 22-A1：响应时间 < 500ms
+    - 验收标准 22-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-022-02
+    given: 前置条件 22-B
+    when: 触发动作 22-B
+    then: 预期结果 22-B
+    acceptance_criteria:
+    - 验收标准 22-B1：并发 1000 TPS
+    - 验收标准 22-B2：数据一致性保证
+- id: REQ-ORD-023
+  title: 合单支付
+  description: 多个订单支持合并支付
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-023-01
+    given: 前置条件 23-A
+    when: 触发动作 23-A
+    then: 预期结果 23-A
+    acceptance_criteria:
+    - 验收标准 23-A1：响应时间 < 500ms
+    - 验收标准 23-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-023-02
+    given: 前置条件 23-B
+    when: 触发动作 23-B
+    then: 预期结果 23-B
+    acceptance_criteria:
+    - 验收标准 23-B1：并发 1000 TPS
+    - 验收标准 23-B2：数据一致性保证
+- id: REQ-ORD-024
+  title: 预售订单
+  description: 支持预售商品的定金+尾款支付
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-024-01
+    given: 前置条件 24-A
+    when: 触发动作 24-A
+    then: 预期结果 24-A
+    acceptance_criteria:
+    - 验收标准 24-A1：响应时间 < 500ms
+    - 验收标准 24-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-024-02
+    given: 前置条件 24-B
+    when: 触发动作 24-B
+    then: 预期结果 24-B
+    acceptance_criteria:
+    - 验收标准 24-B1：并发 1000 TPS
+    - 验收标准 24-B2：数据一致性保证
+- id: REQ-ORD-025
+  title: 秒杀订单
+  description: 秒杀场景下的高并发下单处理
+  priority: should
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-025-01
+    given: 前置条件 25-A
+    when: 触发动作 25-A
+    then: 预期结果 25-A
+    acceptance_criteria:
+    - 验收标准 25-A1：响应时间 < 500ms
+    - 验收标准 25-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-025-02
+    given: 前置条件 25-B
+    when: 触发动作 25-B
+    then: 预期结果 25-B
+    acceptance_criteria:
+    - 验收标准 25-B1：并发 1000 TPS
+    - 验收标准 25-B2：数据一致性保证
+- id: REQ-ORD-026
+  title: 拼团订单
+  description: 支持拼团模式的订单创建和成团判断
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-026-01
+    given: 前置条件 26-A
+    when: 触发动作 26-A
+    then: 预期结果 26-A
+    acceptance_criteria:
+    - 验收标准 26-A1：响应时间 < 500ms
+    - 验收标准 26-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-026-02
+    given: 前置条件 26-B
+    when: 触发动作 26-B
+    then: 预期结果 26-B
+    acceptance_criteria:
+    - 验收标准 26-B1：并发 1000 TPS
+    - 验收标准 26-B2：数据一致性保证
+- id: REQ-ORD-027
+  title: 跨境订单
+  description: 跨境商品的报关信息收集和海关对接
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-027-01
+    given: 前置条件 27-A
+    when: 触发动作 27-A
+    then: 预期结果 27-A
+    acceptance_criteria:
+    - 验收标准 27-A1：响应时间 < 500ms
+    - 验收标准 27-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-027-02
+    given: 前置条件 27-B
+    when: 触发动作 27-B
+    then: 预期结果 27-B
+    acceptance_criteria:
+    - 验收标准 27-B1：并发 1000 TPS
+    - 验收标准 27-B2：数据一致性保证
+- id: REQ-ORD-028
+  title: 货到付款
+  description: 支持货到付款的支付方式
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-028-01
+    given: 前置条件 28-A
+    when: 触发动作 28-A
+    then: 预期结果 28-A
+    acceptance_criteria:
+    - 验收标准 28-A1：响应时间 < 500ms
+    - 验收标准 28-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-028-02
+    given: 前置条件 28-B
+    when: 触发动作 28-B
+    then: 预期结果 28-B
+    acceptance_criteria:
+    - 验收标准 28-B1：并发 1000 TPS
+    - 验收标准 28-B2：数据一致性保证
+- id: REQ-ORD-029
+  title: 分期付款
+  description: 支持花呗/信用卡分期支付
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-029-01
+    given: 前置条件 29-A
+    when: 触发动作 29-A
+    then: 预期结果 29-A
+    acceptance_criteria:
+    - 验收标准 29-A1：响应时间 < 500ms
+    - 验收标准 29-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-029-02
+    given: 前置条件 29-B
+    when: 触发动作 29-B
+    then: 预期结果 29-B
+    acceptance_criteria:
+    - 验收标准 29-B1：并发 1000 TPS
+    - 验收标准 29-B2：数据一致性保证
+- id: REQ-ORD-030
+  title: 账单分期
+  description: 已支付订单支持转为分期
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-030-01
+    given: 前置条件 30-A
+    when: 触发动作 30-A
+    then: 预期结果 30-A
+    acceptance_criteria:
+    - 验收标准 30-A1：响应时间 < 500ms
+    - 验收标准 30-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-030-02
+    given: 前置条件 30-B
+    when: 触发动作 30-B
+    then: 预期结果 30-B
+    acceptance_criteria:
+    - 验收标准 30-B1：并发 1000 TPS
+    - 验收标准 30-B2：数据一致性保证
+- id: REQ-ORD-031
+  title: 订单创建（V2）
+  description: 用户可以通过前端页面创建新订单，选择商品和数量，扩展场景2
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-031-01
+    given: 前置条件 31-A
+    when: 触发动作 31-A
+    then: 预期结果 31-A
+    acceptance_criteria:
+    - 验收标准 31-A1：响应时间 < 500ms
+    - 验收标准 31-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-031-02
+    given: 前置条件 31-B
+    when: 触发动作 31-B
+    then: 预期结果 31-B
+    acceptance_criteria:
+    - 验收标准 31-B1：并发 1000 TPS
+    - 验收标准 31-B2：数据一致性保证
+- id: REQ-ORD-032
+  title: 订单支付（V2）
+  description: 用户可以通过微信/支付宝完成订单支付，扩展场景2
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-032-01
+    given: 前置条件 32-A
+    when: 触发动作 32-A
+    then: 预期结果 32-A
+    acceptance_criteria:
+    - 验收标准 32-A1：响应时间 < 500ms
+    - 验收标准 32-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-032-02
+    given: 前置条件 32-B
+    when: 触发动作 32-B
+    then: 预期结果 32-B
+    acceptance_criteria:
+    - 验收标准 32-B1：并发 1000 TPS
+    - 验收标准 32-B2：数据一致性保证
+- id: REQ-ORD-033
+  title: 支付回调（V2）
+  description: 支付成功后系统自动更新订单状态为已支付，扩展场景2
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-033-01
+    given: 前置条件 33-A
+    when: 触发动作 33-A
+    then: 预期结果 33-A
+    acceptance_criteria:
+    - 验收标准 33-A1：响应时间 < 500ms
+    - 验收标准 33-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-033-02
+    given: 前置条件 33-B
+    when: 触发动作 33-B
+    then: 预期结果 33-B
+    acceptance_criteria:
+    - 验收标准 33-B1：并发 1000 TPS
+    - 验收标准 33-B2：数据一致性保证
+- id: REQ-ORD-034
+  title: 订单取消（V2）
+  description: 用户可以在支付前取消订单，扩展场景2
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-034-01
+    given: 前置条件 34-A
+    when: 触发动作 34-A
+    then: 预期结果 34-A
+    acceptance_criteria:
+    - 验收标准 34-A1：响应时间 < 500ms
+    - 验收标准 34-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-034-02
+    given: 前置条件 34-B
+    when: 触发动作 34-B
+    then: 预期结果 34-B
+    acceptance_criteria:
+    - 验收标准 34-B1：并发 1000 TPS
+    - 验收标准 34-B2：数据一致性保证
+- id: REQ-ORD-035
+  title: 超时取消（V2）
+  description: 未支付订单 30 分钟后自动取消，扩展场景2
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-035-01
+    given: 前置条件 35-A
+    when: 触发动作 35-A
+    then: 预期结果 35-A
+    acceptance_criteria:
+    - 验收标准 35-A1：响应时间 < 500ms
+    - 验收标准 35-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-035-02
+    given: 前置条件 35-B
+    when: 触发动作 35-B
+    then: 预期结果 35-B
+    acceptance_criteria:
+    - 验收标准 35-B1：并发 1000 TPS
+    - 验收标准 35-B2：数据一致性保证
+- id: REQ-ORD-036
+  title: 订单查询（V2）
+  description: 用户可以按时间范围查询历史订单，扩展场景2
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-036-01
+    given: 前置条件 36-A
+    when: 触发动作 36-A
+    then: 预期结果 36-A
+    acceptance_criteria:
+    - 验收标准 36-A1：响应时间 < 500ms
+    - 验收标准 36-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-036-02
+    given: 前置条件 36-B
+    when: 触发动作 36-B
+    then: 预期结果 36-B
+    acceptance_criteria:
+    - 验收标准 36-B1：并发 1000 TPS
+    - 验收标准 36-B2：数据一致性保证
+- id: REQ-ORD-037
+  title: 订单详情（V2）
+  description: 用户可以查看单个订单的完整信息，扩展场景2
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-037-01
+    given: 前置条件 37-A
+    when: 触发动作 37-A
+    then: 预期结果 37-A
+    acceptance_criteria:
+    - 验收标准 37-A1：响应时间 < 500ms
+    - 验收标准 37-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-037-02
+    given: 前置条件 37-B
+    when: 触发动作 37-B
+    then: 预期结果 37-B
+    acceptance_criteria:
+    - 验收标准 37-B1：并发 1000 TPS
+    - 验收标准 37-B2：数据一致性保证
+- id: REQ-ORD-038
+  title: 物流跟踪（V2）
+  description: 用户可以查看订单的物流配送状态，扩展场景2
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-038-01
+    given: 前置条件 38-A
+    when: 触发动作 38-A
+    then: 预期结果 38-A
+    acceptance_criteria:
+    - 验收标准 38-A1：响应时间 < 500ms
+    - 验收标准 38-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-038-02
+    given: 前置条件 38-B
+    when: 触发动作 38-B
+    then: 预期结果 38-B
+    acceptance_criteria:
+    - 验收标准 38-B1：并发 1000 TPS
+    - 验收标准 38-B2：数据一致性保证
+- id: REQ-ORD-039
+  title: 退款申请（V2）
+  description: 用户可以对已支付订单申请退款，扩展场景2
+  priority: should
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-039-01
+    given: 前置条件 39-A
+    when: 触发动作 39-A
+    then: 预期结果 39-A
+    acceptance_criteria:
+    - 验收标准 39-A1：响应时间 < 500ms
+    - 验收标准 39-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-039-02
+    given: 前置条件 39-B
+    when: 触发动作 39-B
+    then: 预期结果 39-B
+    acceptance_criteria:
+    - 验收标准 39-B1：并发 1000 TPS
+    - 验收标准 39-B2：数据一致性保证
+- id: REQ-ORD-040
+  title: 退款审核（V2）
+  description: 管理员可以审核用户的退款申请，扩展场景2
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-040-01
+    given: 前置条件 40-A
+    when: 触发动作 40-A
+    then: 预期结果 40-A
+    acceptance_criteria:
+    - 验收标准 40-A1：响应时间 < 500ms
+    - 验收标准 40-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-040-02
+    given: 前置条件 40-B
+    when: 触发动作 40-B
+    then: 预期结果 40-B
+    acceptance_criteria:
+    - 验收标准 40-B1：并发 1000 TPS
+    - 验收标准 40-B2：数据一致性保证
+- id: REQ-ORD-041
+  title: 库存扣减（V2）
+  description: 下单时自动扣减商品库存，扩展场景2
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-041-01
+    given: 前置条件 41-A
+    when: 触发动作 41-A
+    then: 预期结果 41-A
+    acceptance_criteria:
+    - 验收标准 41-A1：响应时间 < 500ms
+    - 验收标准 41-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-041-02
+    given: 前置条件 41-B
+    when: 触发动作 41-B
+    then: 预期结果 41-B
+    acceptance_criteria:
+    - 验收标准 41-B1：并发 1000 TPS
+    - 验收标准 41-B2：数据一致性保证
+- id: REQ-ORD-042
+  title: 库存恢复（V2）
+  description: 取消订单时自动恢复商品库存，扩展场景2
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-042-01
+    given: 前置条件 42-A
+    when: 触发动作 42-A
+    then: 预期结果 42-A
+    acceptance_criteria:
+    - 验收标准 42-A1：响应时间 < 500ms
+    - 验收标准 42-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-042-02
+    given: 前置条件 42-B
+    when: 触发动作 42-B
+    then: 预期结果 42-B
+    acceptance_criteria:
+    - 验收标准 42-B1：并发 1000 TPS
+    - 验收标准 42-B2：数据一致性保证
+- id: REQ-ORD-043
+  title: 优惠券使用（V2）
+  description: 用户可以在下单时使用优惠券，扩展场景2
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-043-01
+    given: 前置条件 43-A
+    when: 触发动作 43-A
+    then: 预期结果 43-A
+    acceptance_criteria:
+    - 验收标准 43-A1：响应时间 < 500ms
+    - 验收标准 43-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-043-02
+    given: 前置条件 43-B
+    when: 触发动作 43-B
+    then: 预期结果 43-B
+    acceptance_criteria:
+    - 验收标准 43-B1：并发 1000 TPS
+    - 验收标准 43-B2：数据一致性保证
+- id: REQ-ORD-044
+  title: 积分抵扣（V2）
+  description: 用户可以使用积分抵扣订单金额，扩展场景2
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-044-01
+    given: 前置条件 44-A
+    when: 触发动作 44-A
+    then: 预期结果 44-A
+    acceptance_criteria:
+    - 验收标准 44-A1：响应时间 < 500ms
+    - 验收标准 44-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-044-02
+    given: 前置条件 44-B
+    when: 触发动作 44-B
+    then: 预期结果 44-B
+    acceptance_criteria:
+    - 验收标准 44-B1：并发 1000 TPS
+    - 验收标准 44-B2：数据一致性保证
+- id: REQ-ORD-045
+  title: 发票开具（V2）
+  description: 用户可以对已完成订单申请电子发票，扩展场景2
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-045-01
+    given: 前置条件 45-A
+    when: 触发动作 45-A
+    then: 预期结果 45-A
+    acceptance_criteria:
+    - 验收标准 45-A1：响应时间 < 500ms
+    - 验收标准 45-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-045-02
+    given: 前置条件 45-B
+    when: 触发动作 45-B
+    then: 预期结果 45-B
+    acceptance_criteria:
+    - 验收标准 45-B1：并发 1000 TPS
+    - 验收标准 45-B2：数据一致性保证
+- id: REQ-ORD-046
+  title: 订单导出（V2）
+  description: 管理员可以按条件导出订单列表为 CSV，扩展场景2
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-046-01
+    given: 前置条件 46-A
+    when: 触发动作 46-A
+    then: 预期结果 46-A
+    acceptance_criteria:
+    - 验收标准 46-A1：响应时间 < 500ms
+    - 验收标准 46-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-046-02
+    given: 前置条件 46-B
+    when: 触发动作 46-B
+    then: 预期结果 46-B
+    acceptance_criteria:
+    - 验收标准 46-B1：并发 1000 TPS
+    - 验收标准 46-B2：数据一致性保证
+- id: REQ-ORD-047
+  title: 批量发货（V2）
+  description: 管理员可以批量更新订单为已发货，扩展场景2
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-047-01
+    given: 前置条件 47-A
+    when: 触发动作 47-A
+    then: 预期结果 47-A
+    acceptance_criteria:
+    - 验收标准 47-A1：响应时间 < 500ms
+    - 验收标准 47-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-047-02
+    given: 前置条件 47-B
+    when: 触发动作 47-B
+    then: 预期结果 47-B
+    acceptance_criteria:
+    - 验收标准 47-B1：并发 1000 TPS
+    - 验收标准 47-B2：数据一致性保证
+- id: REQ-ORD-048
+  title: 收货确认（V2）
+  description: 用户收到商品后可以确认收货，扩展场景2
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-048-01
+    given: 前置条件 48-A
+    when: 触发动作 48-A
+    then: 预期结果 48-A
+    acceptance_criteria:
+    - 验收标准 48-A1：响应时间 < 500ms
+    - 验收标准 48-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-048-02
+    given: 前置条件 48-B
+    when: 触发动作 48-B
+    then: 预期结果 48-B
+    acceptance_criteria:
+    - 验收标准 48-B1：并发 1000 TPS
+    - 验收标准 48-B2：数据一致性保证
+- id: REQ-ORD-049
+  title: 自动确认（V2）
+  description: 发货后 15 天自动确认收货，扩展场景2
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-049-01
+    given: 前置条件 49-A
+    when: 触发动作 49-A
+    then: 预期结果 49-A
+    acceptance_criteria:
+    - 验收标准 49-A1：响应时间 < 500ms
+    - 验收标准 49-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-049-02
+    given: 前置条件 49-B
+    when: 触发动作 49-B
+    then: 预期结果 49-B
+    acceptance_criteria:
+    - 验收标准 49-B1：并发 1000 TPS
+    - 验收标准 49-B2：数据一致性保证
+- id: REQ-ORD-050
+  title: 评价功能（V2）
+  description: 用户可以对已收货订单进行评价，扩展场景2
+  priority: should
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-050-01
+    given: 前置条件 50-A
+    when: 触发动作 50-A
+    then: 预期结果 50-A
+    acceptance_criteria:
+    - 验收标准 50-A1：响应时间 < 500ms
+    - 验收标准 50-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-050-02
+    given: 前置条件 50-B
+    when: 触发动作 50-B
+    then: 预期结果 50-B
+    acceptance_criteria:
+    - 验收标准 50-B1：并发 1000 TPS
+    - 验收标准 50-B2：数据一致性保证
+- id: REQ-ORD-051
+  title: 差评处理（V2）
+  description: 客服可以对差评订单进行跟进处理，扩展场景2
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-051-01
+    given: 前置条件 51-A
+    when: 触发动作 51-A
+    then: 预期结果 51-A
+    acceptance_criteria:
+    - 验收标准 51-A1：响应时间 < 500ms
+    - 验收标准 51-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-051-02
+    given: 前置条件 51-B
+    when: 触发动作 51-B
+    then: 预期结果 51-B
+    acceptance_criteria:
+    - 验收标准 51-B1：并发 1000 TPS
+    - 验收标准 51-B2：数据一致性保证
+- id: REQ-ORD-052
+  title: 订单拆分（V2）
+  description: 多仓库商品自动拆分为子订单，扩展场景2
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-052-01
+    given: 前置条件 52-A
+    when: 触发动作 52-A
+    then: 预期结果 52-A
+    acceptance_criteria:
+    - 验收标准 52-A1：响应时间 < 500ms
+    - 验收标准 52-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-052-02
+    given: 前置条件 52-B
+    when: 触发动作 52-B
+    then: 预期结果 52-B
+    acceptance_criteria:
+    - 验收标准 52-B1：并发 1000 TPS
+    - 验收标准 52-B2：数据一致性保证
+- id: REQ-ORD-053
+  title: 合单支付（V2）
+  description: 多个订单支持合并支付，扩展场景2
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-053-01
+    given: 前置条件 53-A
+    when: 触发动作 53-A
+    then: 预期结果 53-A
+    acceptance_criteria:
+    - 验收标准 53-A1：响应时间 < 500ms
+    - 验收标准 53-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-053-02
+    given: 前置条件 53-B
+    when: 触发动作 53-B
+    then: 预期结果 53-B
+    acceptance_criteria:
+    - 验收标准 53-B1：并发 1000 TPS
+    - 验收标准 53-B2：数据一致性保证
+- id: REQ-ORD-054
+  title: 预售订单（V2）
+  description: 支持预售商品的定金+尾款支付，扩展场景2
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-054-01
+    given: 前置条件 54-A
+    when: 触发动作 54-A
+    then: 预期结果 54-A
+    acceptance_criteria:
+    - 验收标准 54-A1：响应时间 < 500ms
+    - 验收标准 54-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-054-02
+    given: 前置条件 54-B
+    when: 触发动作 54-B
+    then: 预期结果 54-B
+    acceptance_criteria:
+    - 验收标准 54-B1：并发 1000 TPS
+    - 验收标准 54-B2：数据一致性保证
+- id: REQ-ORD-055
+  title: 秒杀订单（V2）
+  description: 秒杀场景下的高并发下单处理，扩展场景2
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-055-01
+    given: 前置条件 55-A
+    when: 触发动作 55-A
+    then: 预期结果 55-A
+    acceptance_criteria:
+    - 验收标准 55-A1：响应时间 < 500ms
+    - 验收标准 55-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-055-02
+    given: 前置条件 55-B
+    when: 触发动作 55-B
+    then: 预期结果 55-B
+    acceptance_criteria:
+    - 验收标准 55-B1：并发 1000 TPS
+    - 验收标准 55-B2：数据一致性保证
+- id: REQ-ORD-056
+  title: 拼团订单（V2）
+  description: 支持拼团模式的订单创建和成团判断，扩展场景2
+  priority: should
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-056-01
+    given: 前置条件 56-A
+    when: 触发动作 56-A
+    then: 预期结果 56-A
+    acceptance_criteria:
+    - 验收标准 56-A1：响应时间 < 500ms
+    - 验收标准 56-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-056-02
+    given: 前置条件 56-B
+    when: 触发动作 56-B
+    then: 预期结果 56-B
+    acceptance_criteria:
+    - 验收标准 56-B1：并发 1000 TPS
+    - 验收标准 56-B2：数据一致性保证
+- id: REQ-ORD-057
+  title: 跨境订单（V2）
+  description: 跨境商品的报关信息收集和海关对接，扩展场景2
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-057-01
+    given: 前置条件 57-A
+    when: 触发动作 57-A
+    then: 预期结果 57-A
+    acceptance_criteria:
+    - 验收标准 57-A1：响应时间 < 500ms
+    - 验收标准 57-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-057-02
+    given: 前置条件 57-B
+    when: 触发动作 57-B
+    then: 预期结果 57-B
+    acceptance_criteria:
+    - 验收标准 57-B1：并发 1000 TPS
+    - 验收标准 57-B2：数据一致性保证
+- id: REQ-ORD-058
+  title: 货到付款（V2）
+  description: 支持货到付款的支付方式，扩展场景2
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-058-01
+    given: 前置条件 58-A
+    when: 触发动作 58-A
+    then: 预期结果 58-A
+    acceptance_criteria:
+    - 验收标准 58-A1：响应时间 < 500ms
+    - 验收标准 58-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-058-02
+    given: 前置条件 58-B
+    when: 触发动作 58-B
+    then: 预期结果 58-B
+    acceptance_criteria:
+    - 验收标准 58-B1：并发 1000 TPS
+    - 验收标准 58-B2：数据一致性保证
+- id: REQ-ORD-059
+  title: 分期付款（V2）
+  description: 支持花呗/信用卡分期支付，扩展场景2
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-059-01
+    given: 前置条件 59-A
+    when: 触发动作 59-A
+    then: 预期结果 59-A
+    acceptance_criteria:
+    - 验收标准 59-A1：响应时间 < 500ms
+    - 验收标准 59-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-059-02
+    given: 前置条件 59-B
+    when: 触发动作 59-B
+    then: 预期结果 59-B
+    acceptance_criteria:
+    - 验收标准 59-B1：并发 1000 TPS
+    - 验收标准 59-B2：数据一致性保证
+- id: REQ-ORD-060
+  title: 账单分期（V2）
+  description: 已支付订单支持转为分期，扩展场景2
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-060-01
+    given: 前置条件 60-A
+    when: 触发动作 60-A
+    then: 预期结果 60-A
+    acceptance_criteria:
+    - 验收标准 60-A1：响应时间 < 500ms
+    - 验收标准 60-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-060-02
+    given: 前置条件 60-B
+    when: 触发动作 60-B
+    then: 预期结果 60-B
+    acceptance_criteria:
+    - 验收标准 60-B1：并发 1000 TPS
+    - 验收标准 60-B2：数据一致性保证
+- id: REQ-ORD-061
+  title: 订单创建（V3）
+  description: 用户可以通过前端页面创建新订单，选择商品和数量，扩展场景3
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-061-01
+    given: 前置条件 61-A
+    when: 触发动作 61-A
+    then: 预期结果 61-A
+    acceptance_criteria:
+    - 验收标准 61-A1：响应时间 < 500ms
+    - 验收标准 61-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-061-02
+    given: 前置条件 61-B
+    when: 触发动作 61-B
+    then: 预期结果 61-B
+    acceptance_criteria:
+    - 验收标准 61-B1：并发 1000 TPS
+    - 验收标准 61-B2：数据一致性保证
+- id: REQ-ORD-062
+  title: 订单支付（V3）
+  description: 用户可以通过微信/支付宝完成订单支付，扩展场景3
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-062-01
+    given: 前置条件 62-A
+    when: 触发动作 62-A
+    then: 预期结果 62-A
+    acceptance_criteria:
+    - 验收标准 62-A1：响应时间 < 500ms
+    - 验收标准 62-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-062-02
+    given: 前置条件 62-B
+    when: 触发动作 62-B
+    then: 预期结果 62-B
+    acceptance_criteria:
+    - 验收标准 62-B1：并发 1000 TPS
+    - 验收标准 62-B2：数据一致性保证
+- id: REQ-ORD-063
+  title: 支付回调（V3）
+  description: 支付成功后系统自动更新订单状态为已支付，扩展场景3
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-063-01
+    given: 前置条件 63-A
+    when: 触发动作 63-A
+    then: 预期结果 63-A
+    acceptance_criteria:
+    - 验收标准 63-A1：响应时间 < 500ms
+    - 验收标准 63-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-063-02
+    given: 前置条件 63-B
+    when: 触发动作 63-B
+    then: 预期结果 63-B
+    acceptance_criteria:
+    - 验收标准 63-B1：并发 1000 TPS
+    - 验收标准 63-B2：数据一致性保证
+- id: REQ-ORD-064
+  title: 订单取消（V3）
+  description: 用户可以在支付前取消订单，扩展场景3
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-064-01
+    given: 前置条件 64-A
+    when: 触发动作 64-A
+    then: 预期结果 64-A
+    acceptance_criteria:
+    - 验收标准 64-A1：响应时间 < 500ms
+    - 验收标准 64-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-064-02
+    given: 前置条件 64-B
+    when: 触发动作 64-B
+    then: 预期结果 64-B
+    acceptance_criteria:
+    - 验收标准 64-B1：并发 1000 TPS
+    - 验收标准 64-B2：数据一致性保证
+- id: REQ-ORD-065
+  title: 超时取消（V3）
+  description: 未支付订单 30 分钟后自动取消，扩展场景3
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-065-01
+    given: 前置条件 65-A
+    when: 触发动作 65-A
+    then: 预期结果 65-A
+    acceptance_criteria:
+    - 验收标准 65-A1：响应时间 < 500ms
+    - 验收标准 65-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-065-02
+    given: 前置条件 65-B
+    when: 触发动作 65-B
+    then: 预期结果 65-B
+    acceptance_criteria:
+    - 验收标准 65-B1：并发 1000 TPS
+    - 验收标准 65-B2：数据一致性保证
+- id: REQ-ORD-066
+  title: 订单查询（V3）
+  description: 用户可以按时间范围查询历史订单，扩展场景3
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-066-01
+    given: 前置条件 66-A
+    when: 触发动作 66-A
+    then: 预期结果 66-A
+    acceptance_criteria:
+    - 验收标准 66-A1：响应时间 < 500ms
+    - 验收标准 66-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-066-02
+    given: 前置条件 66-B
+    when: 触发动作 66-B
+    then: 预期结果 66-B
+    acceptance_criteria:
+    - 验收标准 66-B1：并发 1000 TPS
+    - 验收标准 66-B2：数据一致性保证
+- id: REQ-ORD-067
+  title: 订单详情（V3）
+  description: 用户可以查看单个订单的完整信息，扩展场景3
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-067-01
+    given: 前置条件 67-A
+    when: 触发动作 67-A
+    then: 预期结果 67-A
+    acceptance_criteria:
+    - 验收标准 67-A1：响应时间 < 500ms
+    - 验收标准 67-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-067-02
+    given: 前置条件 67-B
+    when: 触发动作 67-B
+    then: 预期结果 67-B
+    acceptance_criteria:
+    - 验收标准 67-B1：并发 1000 TPS
+    - 验收标准 67-B2：数据一致性保证
+- id: REQ-ORD-068
+  title: 物流跟踪（V3）
+  description: 用户可以查看订单的物流配送状态，扩展场景3
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-068-01
+    given: 前置条件 68-A
+    when: 触发动作 68-A
+    then: 预期结果 68-A
+    acceptance_criteria:
+    - 验收标准 68-A1：响应时间 < 500ms
+    - 验收标准 68-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-068-02
+    given: 前置条件 68-B
+    when: 触发动作 68-B
+    then: 预期结果 68-B
+    acceptance_criteria:
+    - 验收标准 68-B1：并发 1000 TPS
+    - 验收标准 68-B2：数据一致性保证
+- id: REQ-ORD-069
+  title: 退款申请（V3）
+  description: 用户可以对已支付订单申请退款，扩展场景3
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-069-01
+    given: 前置条件 69-A
+    when: 触发动作 69-A
+    then: 预期结果 69-A
+    acceptance_criteria:
+    - 验收标准 69-A1：响应时间 < 500ms
+    - 验收标准 69-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-069-02
+    given: 前置条件 69-B
+    when: 触发动作 69-B
+    then: 预期结果 69-B
+    acceptance_criteria:
+    - 验收标准 69-B1：并发 1000 TPS
+    - 验收标准 69-B2：数据一致性保证
+- id: REQ-ORD-070
+  title: 退款审核（V3）
+  description: 管理员可以审核用户的退款申请，扩展场景3
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-070-01
+    given: 前置条件 70-A
+    when: 触发动作 70-A
+    then: 预期结果 70-A
+    acceptance_criteria:
+    - 验收标准 70-A1：响应时间 < 500ms
+    - 验收标准 70-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-070-02
+    given: 前置条件 70-B
+    when: 触发动作 70-B
+    then: 预期结果 70-B
+    acceptance_criteria:
+    - 验收标准 70-B1：并发 1000 TPS
+    - 验收标准 70-B2：数据一致性保证
+- id: REQ-ORD-071
+  title: 库存扣减（V3）
+  description: 下单时自动扣减商品库存，扩展场景3
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-071-01
+    given: 前置条件 71-A
+    when: 触发动作 71-A
+    then: 预期结果 71-A
+    acceptance_criteria:
+    - 验收标准 71-A1：响应时间 < 500ms
+    - 验收标准 71-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-071-02
+    given: 前置条件 71-B
+    when: 触发动作 71-B
+    then: 预期结果 71-B
+    acceptance_criteria:
+    - 验收标准 71-B1：并发 1000 TPS
+    - 验收标准 71-B2：数据一致性保证
+- id: REQ-ORD-072
+  title: 库存恢复（V3）
+  description: 取消订单时自动恢复商品库存，扩展场景3
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-072-01
+    given: 前置条件 72-A
+    when: 触发动作 72-A
+    then: 预期结果 72-A
+    acceptance_criteria:
+    - 验收标准 72-A1：响应时间 < 500ms
+    - 验收标准 72-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-072-02
+    given: 前置条件 72-B
+    when: 触发动作 72-B
+    then: 预期结果 72-B
+    acceptance_criteria:
+    - 验收标准 72-B1：并发 1000 TPS
+    - 验收标准 72-B2：数据一致性保证
+- id: REQ-ORD-073
+  title: 优惠券使用（V3）
+  description: 用户可以在下单时使用优惠券，扩展场景3
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-073-01
+    given: 前置条件 73-A
+    when: 触发动作 73-A
+    then: 预期结果 73-A
+    acceptance_criteria:
+    - 验收标准 73-A1：响应时间 < 500ms
+    - 验收标准 73-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-073-02
+    given: 前置条件 73-B
+    when: 触发动作 73-B
+    then: 预期结果 73-B
+    acceptance_criteria:
+    - 验收标准 73-B1：并发 1000 TPS
+    - 验收标准 73-B2：数据一致性保证
+- id: REQ-ORD-074
+  title: 积分抵扣（V3）
+  description: 用户可以使用积分抵扣订单金额，扩展场景3
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-074-01
+    given: 前置条件 74-A
+    when: 触发动作 74-A
+    then: 预期结果 74-A
+    acceptance_criteria:
+    - 验收标准 74-A1：响应时间 < 500ms
+    - 验收标准 74-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-074-02
+    given: 前置条件 74-B
+    when: 触发动作 74-B
+    then: 预期结果 74-B
+    acceptance_criteria:
+    - 验收标准 74-B1：并发 1000 TPS
+    - 验收标准 74-B2：数据一致性保证
+- id: REQ-ORD-075
+  title: 发票开具（V3）
+  description: 用户可以对已完成订单申请电子发票，扩展场景3
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-075-01
+    given: 前置条件 75-A
+    when: 触发动作 75-A
+    then: 预期结果 75-A
+    acceptance_criteria:
+    - 验收标准 75-A1：响应时间 < 500ms
+    - 验收标准 75-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-075-02
+    given: 前置条件 75-B
+    when: 触发动作 75-B
+    then: 预期结果 75-B
+    acceptance_criteria:
+    - 验收标准 75-B1：并发 1000 TPS
+    - 验收标准 75-B2：数据一致性保证
+- id: REQ-ORD-076
+  title: 订单导出（V3）
+  description: 管理员可以按条件导出订单列表为 CSV，扩展场景3
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-076-01
+    given: 前置条件 76-A
+    when: 触发动作 76-A
+    then: 预期结果 76-A
+    acceptance_criteria:
+    - 验收标准 76-A1：响应时间 < 500ms
+    - 验收标准 76-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-076-02
+    given: 前置条件 76-B
+    when: 触发动作 76-B
+    then: 预期结果 76-B
+    acceptance_criteria:
+    - 验收标准 76-B1：并发 1000 TPS
+    - 验收标准 76-B2：数据一致性保证
+- id: REQ-ORD-077
+  title: 批量发货（V3）
+  description: 管理员可以批量更新订单为已发货，扩展场景3
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-077-01
+    given: 前置条件 77-A
+    when: 触发动作 77-A
+    then: 预期结果 77-A
+    acceptance_criteria:
+    - 验收标准 77-A1：响应时间 < 500ms
+    - 验收标准 77-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-077-02
+    given: 前置条件 77-B
+    when: 触发动作 77-B
+    then: 预期结果 77-B
+    acceptance_criteria:
+    - 验收标准 77-B1：并发 1000 TPS
+    - 验收标准 77-B2：数据一致性保证
+- id: REQ-ORD-078
+  title: 收货确认（V3）
+  description: 用户收到商品后可以确认收货，扩展场景3
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-078-01
+    given: 前置条件 78-A
+    when: 触发动作 78-A
+    then: 预期结果 78-A
+    acceptance_criteria:
+    - 验收标准 78-A1：响应时间 < 500ms
+    - 验收标准 78-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-078-02
+    given: 前置条件 78-B
+    when: 触发动作 78-B
+    then: 预期结果 78-B
+    acceptance_criteria:
+    - 验收标准 78-B1：并发 1000 TPS
+    - 验收标准 78-B2：数据一致性保证
+- id: REQ-ORD-079
+  title: 自动确认（V3）
+  description: 发货后 15 天自动确认收货，扩展场景3
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-079-01
+    given: 前置条件 79-A
+    when: 触发动作 79-A
+    then: 预期结果 79-A
+    acceptance_criteria:
+    - 验收标准 79-A1：响应时间 < 500ms
+    - 验收标准 79-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-079-02
+    given: 前置条件 79-B
+    when: 触发动作 79-B
+    then: 预期结果 79-B
+    acceptance_criteria:
+    - 验收标准 79-B1：并发 1000 TPS
+    - 验收标准 79-B2：数据一致性保证
+- id: REQ-ORD-080
+  title: 评价功能（V3）
+  description: 用户可以对已收货订单进行评价，扩展场景3
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-080-01
+    given: 前置条件 80-A
+    when: 触发动作 80-A
+    then: 预期结果 80-A
+    acceptance_criteria:
+    - 验收标准 80-A1：响应时间 < 500ms
+    - 验收标准 80-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-080-02
+    given: 前置条件 80-B
+    when: 触发动作 80-B
+    then: 预期结果 80-B
+    acceptance_criteria:
+    - 验收标准 80-B1：并发 1000 TPS
+    - 验收标准 80-B2：数据一致性保证
+- id: REQ-ORD-081
+  title: 差评处理（V3）
+  description: 客服可以对差评订单进行跟进处理，扩展场景3
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-081-01
+    given: 前置条件 81-A
+    when: 触发动作 81-A
+    then: 预期结果 81-A
+    acceptance_criteria:
+    - 验收标准 81-A1：响应时间 < 500ms
+    - 验收标准 81-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-081-02
+    given: 前置条件 81-B
+    when: 触发动作 81-B
+    then: 预期结果 81-B
+    acceptance_criteria:
+    - 验收标准 81-B1：并发 1000 TPS
+    - 验收标准 81-B2：数据一致性保证
+- id: REQ-ORD-082
+  title: 订单拆分（V3）
+  description: 多仓库商品自动拆分为子订单，扩展场景3
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-082-01
+    given: 前置条件 82-A
+    when: 触发动作 82-A
+    then: 预期结果 82-A
+    acceptance_criteria:
+    - 验收标准 82-A1：响应时间 < 500ms
+    - 验收标准 82-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-082-02
+    given: 前置条件 82-B
+    when: 触发动作 82-B
+    then: 预期结果 82-B
+    acceptance_criteria:
+    - 验收标准 82-B1：并发 1000 TPS
+    - 验收标准 82-B2：数据一致性保证
+- id: REQ-ORD-083
+  title: 合单支付（V3）
+  description: 多个订单支持合并支付，扩展场景3
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-083-01
+    given: 前置条件 83-A
+    when: 触发动作 83-A
+    then: 预期结果 83-A
+    acceptance_criteria:
+    - 验收标准 83-A1：响应时间 < 500ms
+    - 验收标准 83-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-083-02
+    given: 前置条件 83-B
+    when: 触发动作 83-B
+    then: 预期结果 83-B
+    acceptance_criteria:
+    - 验收标准 83-B1：并发 1000 TPS
+    - 验收标准 83-B2：数据一致性保证
+- id: REQ-ORD-084
+  title: 预售订单（V3）
+  description: 支持预售商品的定金+尾款支付，扩展场景3
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-084-01
+    given: 前置条件 84-A
+    when: 触发动作 84-A
+    then: 预期结果 84-A
+    acceptance_criteria:
+    - 验收标准 84-A1：响应时间 < 500ms
+    - 验收标准 84-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-084-02
+    given: 前置条件 84-B
+    when: 触发动作 84-B
+    then: 预期结果 84-B
+    acceptance_criteria:
+    - 验收标准 84-B1：并发 1000 TPS
+    - 验收标准 84-B2：数据一致性保证
+- id: REQ-ORD-085
+  title: 秒杀订单（V3）
+  description: 秒杀场景下的高并发下单处理，扩展场景3
+  priority: should
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-085-01
+    given: 前置条件 85-A
+    when: 触发动作 85-A
+    then: 预期结果 85-A
+    acceptance_criteria:
+    - 验收标准 85-A1：响应时间 < 500ms
+    - 验收标准 85-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-085-02
+    given: 前置条件 85-B
+    when: 触发动作 85-B
+    then: 预期结果 85-B
+    acceptance_criteria:
+    - 验收标准 85-B1：并发 1000 TPS
+    - 验收标准 85-B2：数据一致性保证
+- id: REQ-ORD-086
+  title: 拼团订单（V3）
+  description: 支持拼团模式的订单创建和成团判断，扩展场景3
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-086-01
+    given: 前置条件 86-A
+    when: 触发动作 86-A
+    then: 预期结果 86-A
+    acceptance_criteria:
+    - 验收标准 86-A1：响应时间 < 500ms
+    - 验收标准 86-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-086-02
+    given: 前置条件 86-B
+    when: 触发动作 86-B
+    then: 预期结果 86-B
+    acceptance_criteria:
+    - 验收标准 86-B1：并发 1000 TPS
+    - 验收标准 86-B2：数据一致性保证
+- id: REQ-ORD-087
+  title: 跨境订单（V3）
+  description: 跨境商品的报关信息收集和海关对接，扩展场景3
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-087-01
+    given: 前置条件 87-A
+    when: 触发动作 87-A
+    then: 预期结果 87-A
+    acceptance_criteria:
+    - 验收标准 87-A1：响应时间 < 500ms
+    - 验收标准 87-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-087-02
+    given: 前置条件 87-B
+    when: 触发动作 87-B
+    then: 预期结果 87-B
+    acceptance_criteria:
+    - 验收标准 87-B1：并发 1000 TPS
+    - 验收标准 87-B2：数据一致性保证
+- id: REQ-ORD-088
+  title: 货到付款（V3）
+  description: 支持货到付款的支付方式，扩展场景3
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-088-01
+    given: 前置条件 88-A
+    when: 触发动作 88-A
+    then: 预期结果 88-A
+    acceptance_criteria:
+    - 验收标准 88-A1：响应时间 < 500ms
+    - 验收标准 88-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-088-02
+    given: 前置条件 88-B
+    when: 触发动作 88-B
+    then: 预期结果 88-B
+    acceptance_criteria:
+    - 验收标准 88-B1：并发 1000 TPS
+    - 验收标准 88-B2：数据一致性保证
+- id: REQ-ORD-089
+  title: 分期付款（V3）
+  description: 支持花呗/信用卡分期支付，扩展场景3
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-089-01
+    given: 前置条件 89-A
+    when: 触发动作 89-A
+    then: 预期结果 89-A
+    acceptance_criteria:
+    - 验收标准 89-A1：响应时间 < 500ms
+    - 验收标准 89-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-089-02
+    given: 前置条件 89-B
+    when: 触发动作 89-B
+    then: 预期结果 89-B
+    acceptance_criteria:
+    - 验收标准 89-B1：并发 1000 TPS
+    - 验收标准 89-B2：数据一致性保证
+- id: REQ-ORD-090
+  title: 账单分期（V3）
+  description: 已支付订单支持转为分期，扩展场景3
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-090-01
+    given: 前置条件 90-A
+    when: 触发动作 90-A
+    then: 预期结果 90-A
+    acceptance_criteria:
+    - 验收标准 90-A1：响应时间 < 500ms
+    - 验收标准 90-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-090-02
+    given: 前置条件 90-B
+    when: 触发动作 90-B
+    then: 预期结果 90-B
+    acceptance_criteria:
+    - 验收标准 90-B1：并发 1000 TPS
+    - 验收标准 90-B2：数据一致性保证
+- id: REQ-ORD-091
+  title: 订单创建（V4）
+  description: 用户可以通过前端页面创建新订单，选择商品和数量，扩展场景4
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-091-01
+    given: 前置条件 91-A
+    when: 触发动作 91-A
+    then: 预期结果 91-A
+    acceptance_criteria:
+    - 验收标准 91-A1：响应时间 < 500ms
+    - 验收标准 91-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-091-02
+    given: 前置条件 91-B
+    when: 触发动作 91-B
+    then: 预期结果 91-B
+    acceptance_criteria:
+    - 验收标准 91-B1：并发 1000 TPS
+    - 验收标准 91-B2：数据一致性保证
+- id: REQ-ORD-092
+  title: 订单支付（V4）
+  description: 用户可以通过微信/支付宝完成订单支付，扩展场景4
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-092-01
+    given: 前置条件 92-A
+    when: 触发动作 92-A
+    then: 预期结果 92-A
+    acceptance_criteria:
+    - 验收标准 92-A1：响应时间 < 500ms
+    - 验收标准 92-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-092-02
+    given: 前置条件 92-B
+    when: 触发动作 92-B
+    then: 预期结果 92-B
+    acceptance_criteria:
+    - 验收标准 92-B1：并发 1000 TPS
+    - 验收标准 92-B2：数据一致性保证
+- id: REQ-ORD-093
+  title: 支付回调（V4）
+  description: 支付成功后系统自动更新订单状态为已支付，扩展场景4
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-093-01
+    given: 前置条件 93-A
+    when: 触发动作 93-A
+    then: 预期结果 93-A
+    acceptance_criteria:
+    - 验收标准 93-A1：响应时间 < 500ms
+    - 验收标准 93-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-093-02
+    given: 前置条件 93-B
+    when: 触发动作 93-B
+    then: 预期结果 93-B
+    acceptance_criteria:
+    - 验收标准 93-B1：并发 1000 TPS
+    - 验收标准 93-B2：数据一致性保证
+- id: REQ-ORD-094
+  title: 订单取消（V4）
+  description: 用户可以在支付前取消订单，扩展场景4
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-094-01
+    given: 前置条件 94-A
+    when: 触发动作 94-A
+    then: 预期结果 94-A
+    acceptance_criteria:
+    - 验收标准 94-A1：响应时间 < 500ms
+    - 验收标准 94-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-094-02
+    given: 前置条件 94-B
+    when: 触发动作 94-B
+    then: 预期结果 94-B
+    acceptance_criteria:
+    - 验收标准 94-B1：并发 1000 TPS
+    - 验收标准 94-B2：数据一致性保证
+- id: REQ-ORD-095
+  title: 超时取消（V4）
+  description: 未支付订单 30 分钟后自动取消，扩展场景4
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-095-01
+    given: 前置条件 95-A
+    when: 触发动作 95-A
+    then: 预期结果 95-A
+    acceptance_criteria:
+    - 验收标准 95-A1：响应时间 < 500ms
+    - 验收标准 95-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-095-02
+    given: 前置条件 95-B
+    when: 触发动作 95-B
+    then: 预期结果 95-B
+    acceptance_criteria:
+    - 验收标准 95-B1：并发 1000 TPS
+    - 验收标准 95-B2：数据一致性保证
+- id: REQ-ORD-096
+  title: 订单查询（V4）
+  description: 用户可以按时间范围查询历史订单，扩展场景4
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-096-01
+    given: 前置条件 96-A
+    when: 触发动作 96-A
+    then: 预期结果 96-A
+    acceptance_criteria:
+    - 验收标准 96-A1：响应时间 < 500ms
+    - 验收标准 96-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-096-02
+    given: 前置条件 96-B
+    when: 触发动作 96-B
+    then: 预期结果 96-B
+    acceptance_criteria:
+    - 验收标准 96-B1：并发 1000 TPS
+    - 验收标准 96-B2：数据一致性保证
+- id: REQ-ORD-097
+  title: 订单详情（V4）
+  description: 用户可以查看单个订单的完整信息，扩展场景4
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-097-01
+    given: 前置条件 97-A
+    when: 触发动作 97-A
+    then: 预期结果 97-A
+    acceptance_criteria:
+    - 验收标准 97-A1：响应时间 < 500ms
+    - 验收标准 97-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-097-02
+    given: 前置条件 97-B
+    when: 触发动作 97-B
+    then: 预期结果 97-B
+    acceptance_criteria:
+    - 验收标准 97-B1：并发 1000 TPS
+    - 验收标准 97-B2：数据一致性保证
+- id: REQ-ORD-098
+  title: 物流跟踪（V4）
+  description: 用户可以查看订单的物流配送状态，扩展场景4
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-098-01
+    given: 前置条件 98-A
+    when: 触发动作 98-A
+    then: 预期结果 98-A
+    acceptance_criteria:
+    - 验收标准 98-A1：响应时间 < 500ms
+    - 验收标准 98-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-098-02
+    given: 前置条件 98-B
+    when: 触发动作 98-B
+    then: 预期结果 98-B
+    acceptance_criteria:
+    - 验收标准 98-B1：并发 1000 TPS
+    - 验收标准 98-B2：数据一致性保证
+- id: REQ-ORD-099
+  title: 退款申请（V4）
+  description: 用户可以对已支付订单申请退款，扩展场景4
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-099-01
+    given: 前置条件 99-A
+    when: 触发动作 99-A
+    then: 预期结果 99-A
+    acceptance_criteria:
+    - 验收标准 99-A1：响应时间 < 500ms
+    - 验收标准 99-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-099-02
+    given: 前置条件 99-B
+    when: 触发动作 99-B
+    then: 预期结果 99-B
+    acceptance_criteria:
+    - 验收标准 99-B1：并发 1000 TPS
+    - 验收标准 99-B2：数据一致性保证
+- id: REQ-ORD-100
+  title: 退款审核（V4）
+  description: 管理员可以审核用户的退款申请，扩展场景4
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-100-01
+    given: 前置条件 100-A
+    when: 触发动作 100-A
+    then: 预期结果 100-A
+    acceptance_criteria:
+    - 验收标准 100-A1：响应时间 < 500ms
+    - 验收标准 100-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-100-02
+    given: 前置条件 100-B
+    when: 触发动作 100-B
+    then: 预期结果 100-B
+    acceptance_criteria:
+    - 验收标准 100-B1：并发 1000 TPS
+    - 验收标准 100-B2：数据一致性保证
+- id: REQ-ORD-101
+  title: 库存扣减（V4）
+  description: 下单时自动扣减商品库存，扩展场景4
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-101-01
+    given: 前置条件 101-A
+    when: 触发动作 101-A
+    then: 预期结果 101-A
+    acceptance_criteria:
+    - 验收标准 101-A1：响应时间 < 500ms
+    - 验收标准 101-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-101-02
+    given: 前置条件 101-B
+    when: 触发动作 101-B
+    then: 预期结果 101-B
+    acceptance_criteria:
+    - 验收标准 101-B1：并发 1000 TPS
+    - 验收标准 101-B2：数据一致性保证
+- id: REQ-ORD-102
+  title: 库存恢复（V4）
+  description: 取消订单时自动恢复商品库存，扩展场景4
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-102-01
+    given: 前置条件 102-A
+    when: 触发动作 102-A
+    then: 预期结果 102-A
+    acceptance_criteria:
+    - 验收标准 102-A1：响应时间 < 500ms
+    - 验收标准 102-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-102-02
+    given: 前置条件 102-B
+    when: 触发动作 102-B
+    then: 预期结果 102-B
+    acceptance_criteria:
+    - 验收标准 102-B1：并发 1000 TPS
+    - 验收标准 102-B2：数据一致性保证
+- id: REQ-ORD-103
+  title: 优惠券使用（V4）
+  description: 用户可以在下单时使用优惠券，扩展场景4
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-103-01
+    given: 前置条件 103-A
+    when: 触发动作 103-A
+    then: 预期结果 103-A
+    acceptance_criteria:
+    - 验收标准 103-A1：响应时间 < 500ms
+    - 验收标准 103-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-103-02
+    given: 前置条件 103-B
+    when: 触发动作 103-B
+    then: 预期结果 103-B
+    acceptance_criteria:
+    - 验收标准 103-B1：并发 1000 TPS
+    - 验收标准 103-B2：数据一致性保证
+- id: REQ-ORD-104
+  title: 积分抵扣（V4）
+  description: 用户可以使用积分抵扣订单金额，扩展场景4
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-104-01
+    given: 前置条件 104-A
+    when: 触发动作 104-A
+    then: 预期结果 104-A
+    acceptance_criteria:
+    - 验收标准 104-A1：响应时间 < 500ms
+    - 验收标准 104-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-104-02
+    given: 前置条件 104-B
+    when: 触发动作 104-B
+    then: 预期结果 104-B
+    acceptance_criteria:
+    - 验收标准 104-B1：并发 1000 TPS
+    - 验收标准 104-B2：数据一致性保证
+- id: REQ-ORD-105
+  title: 发票开具（V4）
+  description: 用户可以对已完成订单申请电子发票，扩展场景4
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-105-01
+    given: 前置条件 105-A
+    when: 触发动作 105-A
+    then: 预期结果 105-A
+    acceptance_criteria:
+    - 验收标准 105-A1：响应时间 < 500ms
+    - 验收标准 105-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-105-02
+    given: 前置条件 105-B
+    when: 触发动作 105-B
+    then: 预期结果 105-B
+    acceptance_criteria:
+    - 验收标准 105-B1：并发 1000 TPS
+    - 验收标准 105-B2：数据一致性保证
+- id: REQ-ORD-106
+  title: 订单导出（V4）
+  description: 管理员可以按条件导出订单列表为 CSV，扩展场景4
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-106-01
+    given: 前置条件 106-A
+    when: 触发动作 106-A
+    then: 预期结果 106-A
+    acceptance_criteria:
+    - 验收标准 106-A1：响应时间 < 500ms
+    - 验收标准 106-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-106-02
+    given: 前置条件 106-B
+    when: 触发动作 106-B
+    then: 预期结果 106-B
+    acceptance_criteria:
+    - 验收标准 106-B1：并发 1000 TPS
+    - 验收标准 106-B2：数据一致性保证
+- id: REQ-ORD-107
+  title: 批量发货（V4）
+  description: 管理员可以批量更新订单为已发货，扩展场景4
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-107-01
+    given: 前置条件 107-A
+    when: 触发动作 107-A
+    then: 预期结果 107-A
+    acceptance_criteria:
+    - 验收标准 107-A1：响应时间 < 500ms
+    - 验收标准 107-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-107-02
+    given: 前置条件 107-B
+    when: 触发动作 107-B
+    then: 预期结果 107-B
+    acceptance_criteria:
+    - 验收标准 107-B1：并发 1000 TPS
+    - 验收标准 107-B2：数据一致性保证
+- id: REQ-ORD-108
+  title: 收货确认（V4）
+  description: 用户收到商品后可以确认收货，扩展场景4
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-108-01
+    given: 前置条件 108-A
+    when: 触发动作 108-A
+    then: 预期结果 108-A
+    acceptance_criteria:
+    - 验收标准 108-A1：响应时间 < 500ms
+    - 验收标准 108-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-108-02
+    given: 前置条件 108-B
+    when: 触发动作 108-B
+    then: 预期结果 108-B
+    acceptance_criteria:
+    - 验收标准 108-B1：并发 1000 TPS
+    - 验收标准 108-B2：数据一致性保证
+- id: REQ-ORD-109
+  title: 自动确认（V4）
+  description: 发货后 15 天自动确认收货，扩展场景4
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-109-01
+    given: 前置条件 109-A
+    when: 触发动作 109-A
+    then: 预期结果 109-A
+    acceptance_criteria:
+    - 验收标准 109-A1：响应时间 < 500ms
+    - 验收标准 109-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-109-02
+    given: 前置条件 109-B
+    when: 触发动作 109-B
+    then: 预期结果 109-B
+    acceptance_criteria:
+    - 验收标准 109-B1：并发 1000 TPS
+    - 验收标准 109-B2：数据一致性保证
+- id: REQ-ORD-110
+  title: 评价功能（V4）
+  description: 用户可以对已收货订单进行评价，扩展场景4
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-110-01
+    given: 前置条件 110-A
+    when: 触发动作 110-A
+    then: 预期结果 110-A
+    acceptance_criteria:
+    - 验收标准 110-A1：响应时间 < 500ms
+    - 验收标准 110-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-110-02
+    given: 前置条件 110-B
+    when: 触发动作 110-B
+    then: 预期结果 110-B
+    acceptance_criteria:
+    - 验收标准 110-B1：并发 1000 TPS
+    - 验收标准 110-B2：数据一致性保证
+- id: REQ-ORD-111
+  title: 差评处理（V4）
+  description: 客服可以对差评订单进行跟进处理，扩展场景4
+  priority: could
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-111-01
+    given: 前置条件 111-A
+    when: 触发动作 111-A
+    then: 预期结果 111-A
+    acceptance_criteria:
+    - 验收标准 111-A1：响应时间 < 500ms
+    - 验收标准 111-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-111-02
+    given: 前置条件 111-B
+    when: 触发动作 111-B
+    then: 预期结果 111-B
+    acceptance_criteria:
+    - 验收标准 111-B1：并发 1000 TPS
+    - 验收标准 111-B2：数据一致性保证
+- id: REQ-ORD-112
+  title: 订单拆分（V4）
+  description: 多仓库商品自动拆分为子订单，扩展场景4
+  priority: could
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-112-01
+    given: 前置条件 112-A
+    when: 触发动作 112-A
+    then: 预期结果 112-A
+    acceptance_criteria:
+    - 验收标准 112-A1：响应时间 < 500ms
+    - 验收标准 112-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-112-02
+    given: 前置条件 112-B
+    when: 触发动作 112-B
+    then: 预期结果 112-B
+    acceptance_criteria:
+    - 验收标准 112-B1：并发 1000 TPS
+    - 验收标准 112-B2：数据一致性保证
+- id: REQ-ORD-113
+  title: 合单支付（V4）
+  description: 多个订单支持合并支付，扩展场景4
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-113-01
+    given: 前置条件 113-A
+    when: 触发动作 113-A
+    then: 预期结果 113-A
+    acceptance_criteria:
+    - 验收标准 113-A1：响应时间 < 500ms
+    - 验收标准 113-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-113-02
+    given: 前置条件 113-B
+    when: 触发动作 113-B
+    then: 预期结果 113-B
+    acceptance_criteria:
+    - 验收标准 113-B1：并发 1000 TPS
+    - 验收标准 113-B2：数据一致性保证
+- id: REQ-ORD-114
+  title: 预售订单（V4）
+  description: 支持预售商品的定金+尾款支付，扩展场景4
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-114-01
+    given: 前置条件 114-A
+    when: 触发动作 114-A
+    then: 预期结果 114-A
+    acceptance_criteria:
+    - 验收标准 114-A1：响应时间 < 500ms
+    - 验收标准 114-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-114-02
+    given: 前置条件 114-B
+    when: 触发动作 114-B
+    then: 预期结果 114-B
+    acceptance_criteria:
+    - 验收标准 114-B1：并发 1000 TPS
+    - 验收标准 114-B2：数据一致性保证
+- id: REQ-ORD-115
+  title: 秒杀订单（V4）
+  description: 秒杀场景下的高并发下单处理，扩展场景4
+  priority: could
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-115-01
+    given: 前置条件 115-A
+    when: 触发动作 115-A
+    then: 预期结果 115-A
+    acceptance_criteria:
+    - 验收标准 115-A1：响应时间 < 500ms
+    - 验收标准 115-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-115-02
+    given: 前置条件 115-B
+    when: 触发动作 115-B
+    then: 预期结果 115-B
+    acceptance_criteria:
+    - 验收标准 115-B1：并发 1000 TPS
+    - 验收标准 115-B2：数据一致性保证
+- id: REQ-ORD-116
+  title: 拼团订单（V4）
+  description: 支持拼团模式的订单创建和成团判断，扩展场景4
+  priority: should
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-116-01
+    given: 前置条件 116-A
+    when: 触发动作 116-A
+    then: 预期结果 116-A
+    acceptance_criteria:
+    - 验收标准 116-A1：响应时间 < 500ms
+    - 验收标准 116-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-116-02
+    given: 前置条件 116-B
+    when: 触发动作 116-B
+    then: 预期结果 116-B
+    acceptance_criteria:
+    - 验收标准 116-B1：并发 1000 TPS
+    - 验收标准 116-B2：数据一致性保证
+- id: REQ-ORD-117
+  title: 跨境订单（V4）
+  description: 跨境商品的报关信息收集和海关对接，扩展场景4
+  priority: should
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-117-01
+    given: 前置条件 117-A
+    when: 触发动作 117-A
+    then: 预期结果 117-A
+    acceptance_criteria:
+    - 验收标准 117-A1：响应时间 < 500ms
+    - 验收标准 117-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-117-02
+    given: 前置条件 117-B
+    when: 触发动作 117-B
+    then: 预期结果 117-B
+    acceptance_criteria:
+    - 验收标准 117-B1：并发 1000 TPS
+    - 验收标准 117-B2：数据一致性保证
+- id: REQ-ORD-118
+  title: 货到付款（V4）
+  description: 支持货到付款的支付方式，扩展场景4
+  priority: must
+  category: functional
+  scenarios:
+  - id: SC-REQ-ORD-118-01
+    given: 前置条件 118-A
+    when: 触发动作 118-A
+    then: 预期结果 118-A
+    acceptance_criteria:
+    - 验收标准 118-A1：响应时间 < 500ms
+    - 验收标准 118-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-118-02
+    given: 前置条件 118-B
+    when: 触发动作 118-B
+    then: 预期结果 118-B
+    acceptance_criteria:
+    - 验收标准 118-B1：并发 1000 TPS
+    - 验收标准 118-B2：数据一致性保证
+- id: REQ-ORD-119
+  title: 分期付款（V4）
+  description: 支持花呗/信用卡分期支付，扩展场景4
+  priority: must
+  category: non_functional
+  scenarios:
+  - id: SC-REQ-ORD-119-01
+    given: 前置条件 119-A
+    when: 触发动作 119-A
+    then: 预期结果 119-A
+    acceptance_criteria:
+    - 验收标准 119-A1：响应时间 < 500ms
+    - 验收标准 119-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-119-02
+    given: 前置条件 119-B
+    when: 触发动作 119-B
+    then: 预期结果 119-B
+    acceptance_criteria:
+    - 验收标准 119-B1：并发 1000 TPS
+    - 验收标准 119-B2：数据一致性保证
+- id: REQ-ORD-120
+  title: 账单分期（V4）
+  description: 已支付订单支持转为分期，扩展场景4
+  priority: must
+  category: performance
+  scenarios:
+  - id: SC-REQ-ORD-120-01
+    given: 前置条件 120-A
+    when: 触发动作 120-A
+    then: 预期结果 120-A
+    acceptance_criteria:
+    - 验收标准 120-A1：响应时间 < 500ms
+    - 验收标准 120-A2：错误率 < 0.1%
+  - id: SC-REQ-ORD-120-02
+    given: 前置条件 120-B
+    when: 触发动作 120-B
+    then: 预期结果 120-B
+    acceptance_criteria:
+    - 验收标准 120-B1：并发 1000 TPS
+    - 验收标准 120-B2：数据一致性保证
+acceptance_criteria:
+- id: AC-ORD-001
+  description: 全局验收标准 1：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-002
+  description: 全局验收标准 2：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-003
+  description: 全局验收标准 3：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-004
+  description: 全局验收标准 4：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-005
+  description: 全局验收标准 5：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-006
+  description: 全局验收标准 6：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-007
+  description: 全局验收标准 7：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-008
+  description: 全局验收标准 8：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-009
+  description: 全局验收标准 9：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-010
+  description: 全局验收标准 10：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-011
+  description: 全局验收标准 11：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-012
+  description: 全局验收标准 12：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-013
+  description: 全局验收标准 13：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-014
+  description: 全局验收标准 14：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-015
+  description: 全局验收标准 15：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-016
+  description: 全局验收标准 16：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-017
+  description: 全局验收标准 17：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-018
+  description: 全局验收标准 18：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-019
+  description: 全局验收标准 19：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-020
+  description: 全局验收标准 20：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-021
+  description: 全局验收标准 21：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-022
+  description: 全局验收标准 22：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-023
+  description: 全局验收标准 23：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-024
+  description: 全局验收标准 24：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-025
+  description: 全局验收标准 25：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-026
+  description: 全局验收标准 26：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-027
+  description: 全局验收标准 27：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-028
+  description: 全局验收标准 28：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-029
+  description: 全局验收标准 29：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-030
+  description: 全局验收标准 30：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-031
+  description: 全局验收标准 31：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-032
+  description: 全局验收标准 32：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-033
+  description: 全局验收标准 33：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-034
+  description: 全局验收标准 34：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-035
+  description: 全局验收标准 35：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-036
+  description: 全局验收标准 36：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-037
+  description: 全局验收标准 37：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-038
+  description: 全局验收标准 38：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-039
+  description: 全局验收标准 39：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-040
+  description: 全局验收标准 40：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-041
+  description: 全局验收标准 41：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-042
+  description: 全局验收标准 42：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-043
+  description: 全局验收标准 43：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-044
+  description: 全局验收标准 44：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-045
+  description: 全局验收标准 45：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-046
+  description: 全局验收标准 46：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-047
+  description: 全局验收标准 47：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-048
+  description: 全局验收标准 48：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-049
+  description: 全局验收标准 49：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-050
+  description: 全局验收标准 50：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-051
+  description: 全局验收标准 51：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-052
+  description: 全局验收标准 52：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-053
+  description: 全局验收标准 53：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-054
+  description: 全局验收标准 54：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-055
+  description: 全局验收标准 55：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-056
+  description: 全局验收标准 56：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-057
+  description: 全局验收标准 57：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-058
+  description: 全局验收标准 58：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-059
+  description: 全局验收标准 59：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-060
+  description: 全局验收标准 60：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-061
+  description: 全局验收标准 61：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-062
+  description: 全局验收标准 62：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-063
+  description: 全局验收标准 63：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-064
+  description: 全局验收标准 64：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-065
+  description: 全局验收标准 65：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-066
+  description: 全局验收标准 66：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-067
+  description: 全局验收标准 67：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-068
+  description: 全局验收标准 68：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-069
+  description: 全局验收标准 69：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-070
+  description: 全局验收标准 70：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-071
+  description: 全局验收标准 71：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-072
+  description: 全局验收标准 72：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-073
+  description: 全局验收标准 73：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-074
+  description: 全局验收标准 74：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-075
+  description: 全局验收标准 75：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-076
+  description: 全局验收标准 76：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-077
+  description: 全局验收标准 77：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-078
+  description: 全局验收标准 78：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-079
+  description: 全局验收标准 79：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-080
+  description: 全局验收标准 80：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-081
+  description: 全局验收标准 81：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-082
+  description: 全局验收标准 82：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-083
+  description: 全局验收标准 83：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-084
+  description: 全局验收标准 84：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-085
+  description: 全局验收标准 85：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-086
+  description: 全局验收标准 86：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-087
+  description: 全局验收标准 87：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-088
+  description: 全局验收标准 88：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-089
+  description: 全局验收标准 89：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-090
+  description: 全局验收标准 90：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-091
+  description: 全局验收标准 91：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-092
+  description: 全局验收标准 92：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-093
+  description: 全局验收标准 93：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-094
+  description: 全局验收标准 94：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-095
+  description: 全局验收标准 95：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-096
+  description: 全局验收标准 96：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-097
+  description: 全局验收标准 97：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-098
+  description: 全局验收标准 98：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-099
+  description: 全局验收标准 99：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-100
+  description: 全局验收标准 100：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-101
+  description: 全局验收标准 101：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-102
+  description: 全局验收标准 102：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-103
+  description: 全局验收标准 103：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-104
+  description: 全局验收标准 104：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-105
+  description: 全局验收标准 105：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-106
+  description: 全局验收标准 106：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-107
+  description: 全局验收标准 107：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-108
+  description: 全局验收标准 108：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-109
+  description: 全局验收标准 109：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-110
+  description: 全局验收标准 110：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-111
+  description: 全局验收标准 111：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-112
+  description: 全局验收标准 112：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-113
+  description: 全局验收标准 113：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-114
+  description: 全局验收标准 114：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-115
+  description: 全局验收标准 115：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-116
+  description: 全局验收标准 116：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-117
+  description: 全局验收标准 117：系统在 99.9% 可用性下运行
+  verification_method: code_review
+- id: AC-ORD-118
+  description: 全局验收标准 118：系统在 99.9% 可用性下运行
+  verification_method: performance_test
+- id: AC-ORD-119
+  description: 全局验收标准 119：系统在 99.9% 可用性下运行
+  verification_method: automated_test
+- id: AC-ORD-120
+  description: 全局验收标准 120：系统在 99.9% 可用性下运行
+  verification_method: code_review
+business_rules:
+- id: BR-ORD-001
+  description: 业务规则 1
+- id: BR-ORD-002
+  description: 业务规则 2
+- id: BR-ORD-003
+  description: 业务规则 3
+- id: BR-ORD-004
+  description: 业务规则 4
+- id: BR-ORD-005
+  description: 业务规则 5
+- id: BR-ORD-006
+  description: 业务规则 6
+- id: BR-ORD-007
+  description: 业务规则 7
+- id: BR-ORD-008
+  description: 业务规则 8
+- id: BR-ORD-009
+  description: 业务规则 9
+- id: BR-ORD-010
+  description: 业务规则 10
+- id: BR-ORD-011
+  description: 业务规则 11
+- id: BR-ORD-012
+  description: 业务规则 12
+- id: BR-ORD-013
+  description: 业务规则 13
+- id: BR-ORD-014
+  description: 业务规则 14
+- id: BR-ORD-015
+  description: 业务规则 15
+- id: BR-ORD-016
+  description: 业务规则 16
+- id: BR-ORD-017
+  description: 业务规则 17
+- id: BR-ORD-018
+  description: 业务规则 18
+- id: BR-ORD-019
+  description: 业务规则 19
+- id: BR-ORD-020
+  description: 业务规则 20
+- id: BR-ORD-021
+  description: 业务规则 21
+- id: BR-ORD-022
+  description: 业务规则 22
+- id: BR-ORD-023
+  description: 业务规则 23
+- id: BR-ORD-024
+  description: 业务规则 24
+- id: BR-ORD-025
+  description: 业务规则 25
+- id: BR-ORD-026
+  description: 业务规则 26
+- id: BR-ORD-027
+  description: 业务规则 27
+- id: BR-ORD-028
+  description: 业务规则 28
+- id: BR-ORD-029
+  description: 业务规则 29
+- id: BR-ORD-030
+  description: 业务规则 30

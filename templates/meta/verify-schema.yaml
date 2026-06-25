@@ -1,0 +1,1013 @@
+# Verify Schema
+
+> **版本**：v1.0-frozen
+> **状态**：✅ **Phase 2.5 Frozen（2026-06-24）**
+> **依赖**：Context Contract v1.0-frozen、Artifact Meta Schema v1.0-frozen、Spec Schema v1.0-frozen、Task Schema v1.0-frozen、Architecture Schema v1.0-frozen
+> **职责**：链路最终消费者——验证 Spec/Task/Architecture 的完整性和一致性，生成 Verify Report
+> **受 Schema Change Policy 保护**：任何修改需走 PATCH/MINOR/MAJOR 流程
+
+> 设计目标：
+> - **闭环验证（Closed-loop Verification）**：Requirement → AC → Task → Constraint → Validation → Verify Report 形成完整闭环
+> - **覆盖率计算（Coverage Calculation）**：自动计算 Requirement/Acceptance/Constraint/Validation 四种覆盖率
+> - **失败可追溯（Failure Traceability）**：每个失败项可反向追踪到根因
+> - **多轮迭代（Multi-iteration）**：支持 Verify → Fix → Re-verify 循环
+
+> ⚠️ **Frozen Schema**：本文件自 2026-06-24 起进入 Frozen 状态，受 Schema Change Policy v1.0 保护。
+
+> **变更历史**：
+> - v1.0-frozen（2026-06-24）：Phase 2.5.9 Freeze
+>   - 4 项字段命名冻结（coverage 四类、validation_status 四值、verify_output_mode 三值、severity_distribution 三值）
+>   - 引入分维度词汇表策略（架构约束 / 运行时 / 问题严重度各自词汇表）
+>   - Consumer Review 通过（4/4 一致）
+>   - 详细冻结决策见 `templates/meta/phase2.5-freeze-declaration.md`
+> - v0.2-draft（2026-06-24）：修复 V6 status 字段引用问题（Chain Review v2.5 发现），改为维护 `context.validation_status_map`，澄清 V2 伪代码
+> - v0.1-draft（2026-06-24）：初始设计
+
+---
+
+## 设计原则
+
+1. **只读消费**：Verify Schema 不修改 Spec/Task/Architecture，只读取和验证
+2. **可生成性**：每个 Verify Report 必须可由 Schema 自动生成，不依赖人工判断
+3. **多维度**：从需求、验收、约束、完成定义四个维度评估
+4. **可重入**：Verify 必须支持多轮迭代（第一轮失败 → 修复 → 第二轮验证）
+5. **修复路径**：每个失败项必须提供具体修复路径（指向具体 Skill 或文件）
+
+---
+
+## Verify 类型总览
+
+Verify Schema 定义 4 种 Verify 类型：
+
+| 类型 | 来源 | 消费者 | 输出 |
+|------|------|--------|------|
+| `verify-coverage` | Spec/Task 引用关系 | harness-verify | CoverageReport |
+| `verify-acceptance` | Task.validation_steps vs Spec.acceptance_criteria | harness-verify | AcceptanceReport |
+| `verify-constraint` | Task.constraint_refs vs Architecture.constraints | harness-review-loop | ConstraintReport |
+| `verify-dod` | Task.definition_of_done vs actual execution | harness-runtime-verify | DoDReport |
+
+---
+
+## Schema 定义
+
+```yaml
+verify_report:
+  # === 继承自 Artifact Meta ===
+  # artifact.id, artifact.type, artifact.title, artifact.domain,
+  # artifact.status, artifact.version, artifact.source,
+  # artifact.dependencies, artifact.related_artifacts
+  # 见 artifact-meta-schema.yaml
+
+  # === 报告基本信息 ===
+  target:
+    description: "本次验证的目标 Feature / Task / Spec 标识"
+    type: object
+    required: true
+    properties:
+      feature_id:
+        description: "关联的功能 ID"
+        type: string
+        example: "F22"
+
+      task_ids:
+        description: "本次验证覆盖的 Task ID 列表"
+        type: array
+        items:
+          type: string
+        example: ["F22-order-001", "F22-order-002"]
+
+      spec_id:
+        description: "关联的 Spec Artifact ID"
+        type: string
+        example: "F22-specs"
+
+      architecture_id:
+        description: "关联的 Architecture Artifact ID（可选）"
+        type: string
+        required: false
+        example: "notification-architecture"
+
+  iteration:
+    description: "验证轮次（第几轮迭代）"
+    type: integer
+    required: true
+    default: 1
+    minimum: 1
+    example: 1
+    notes: |
+      第一轮：初次验证
+      第二轮：修复后重新验证
+      第 N 轮：持续迭代直到全部通过
+
+  # === 验证结果汇总 ===
+  summary:
+    description: "整体验证结果汇总"
+    type: object
+    required: true
+    properties:
+      total_checks:
+        description: "总检查项数"
+        type: integer
+        required: true
+        example: 25
+
+      passed:
+        description: "通过项数"
+        type: integer
+        required: true
+        example: 22
+
+      failed:
+        description: "失败项数"
+        type: integer
+        required: true
+        example: 2
+
+      warned:
+        description: "警告项数"
+        type: integer
+        required: true
+        example: 1
+
+      overall_status:
+        description: "整体验证状态"
+        type: string
+        enum: [passing, failing, warning]
+        required: true
+        example: "warning"
+        notes: |
+          passing: 全部通过
+          warning: 有警告但无失败
+          failing: 有失败项
+
+  # === 覆盖度报告 ===
+  coverage:
+    description: "四项覆盖度计算结果"
+    type: object
+    required: true
+    properties:
+      requirement_coverage:
+        description: "需求覆盖率：被 Task 引用的需求占比"
+        type: object
+        required: true
+        properties:
+          total_requirements:
+            description: "Spec 定义的总需求数"
+            type: integer
+            example: 5
+
+          covered_requirements:
+            description: "被至少一个 Task 引用的需求数"
+            type: integer
+            example: 5
+
+          coverage_rate:
+            description: "覆盖率（0-1）"
+            type: number
+            minimum: 0
+            maximum: 1
+            example: 1.0
+
+          uncovered:
+            description: "未覆盖的需求 ID 列表"
+            type: array
+            items:
+              type: string
+            example: []
+
+      acceptance_coverage:
+        description: "验收标准覆盖率：被 Validation 步骤覆盖的 AC 占比"
+        type: object
+        required: true
+        properties:
+          total_criteria:
+            description: "Spec 定义的总验收标准数"
+            type: integer
+            example: 12
+
+          covered_criteria:
+            description: "被 validation_steps.acceptance_criteria_ids 覆盖的 AC 数"
+            type: integer
+            example: 10
+
+          coverage_rate:
+            description: "覆盖率（0-1）"
+            type: number
+            minimum: 0
+            maximum: 1
+            example: 0.833
+
+          uncovered:
+            description: "未覆盖的 AC ID 列表"
+            type: array
+            items:
+              type: string
+            example: ["AC-NOT-005", "AC-NOT-012"]
+
+      constraint_coverage:
+        description: "架构约束覆盖率：被 Task 引用的约束占比"
+        type: object
+        required: true
+        properties:
+          total_constraints:
+            description: "Architecture 定义的总约束数"
+            type: integer
+            example: 3
+
+          referenced_constraints:
+            description: "被 constraint_refs 引用的约束数"
+            type: integer
+            example: 3
+
+          coverage_rate:
+            description: "覆盖率（0-1）"
+            type: number
+            minimum: 0
+            maximum: 1
+            example: 1.0
+
+          unreferenced:
+            description: "未被引用的约束 ID 列表"
+            type: array
+            items:
+              type: string
+            example: []
+
+      validation_coverage:
+        description: "验证步骤执行率：已通过的 Validation 步骤占比"
+        type: object
+        required: true
+        properties:
+          total_validations:
+            description: "Task 定义的总验证步骤数"
+            type: integer
+            example: 8
+
+          passed_validations:
+            description: "已通过的验证步骤数"
+            type: integer
+            example: 8
+
+          coverage_rate:
+            description: "覆盖率（0-1）"
+            type: number
+            minimum: 0
+            maximum: 1
+            example: 1.0
+
+  # === 详细检查项 ===
+  checks:
+    description: "逐项检查结果列表"
+    type: array
+    required: true
+    items:
+      type: object
+      properties:
+        check_id:
+          description: "检查项唯一标识"
+          type: string
+          format: "VRF-{verify_id}-{seq:03d}"
+          required: true
+          example: "VRF-F22-VERIFY-001-001"
+
+        type:
+          description: "检查类型"
+          type: string
+          enum: [
+            requirement_covered,        # 需求是否被 Task 覆盖
+            acceptance_covered,         # AC 是否被 Validation 覆盖
+            constraint_referenced,      # 约束是否被 Task 引用
+            validation_passed,          # 验证步骤是否通过
+            dod_satisfied,             # 完成定义是否满足
+            reference_valid            # 引用 ID 是否有效
+          ]
+          required: true
+          example: "requirement_covered"
+
+        target_id:
+          description: "被检查对象的 ID（如 REQ-NOT-001）"
+          type: string
+          required: true
+          example: "REQ-NOT-001"
+
+        status:
+          description: "检查状态"
+          type: string
+          enum: [pass, fail, warn, skip]
+          required: true
+          example: "pass"
+
+        message:
+          description: "检查结果说明"
+          type: string
+          required: true
+          example: "需求 REQ-NOT-001 被 F22-order-001 引用，覆盖率 full"
+
+        evidence:
+          description: "证据（引用的 Artifact ID + 字段路径）"
+          type: object
+          required: false
+          properties:
+            artifact_id:
+              type: string
+              example: "F22-order-001"
+
+            field_path:
+              type: string
+              example: "requirement_refs[0].requirement_id"
+
+            snippet:
+              type: string
+              example: "REQ-NOT-001 (coverage: full)"
+
+        fix_path:
+          description: "修复路径（仅 fail/warn 项）"
+          type: string
+          required: false
+          example: |
+            在 F22-order-001 的 requirement_refs 中增加 REQ-NOT-002，或创建新 Task F22-order-003 引用 REQ-NOT-002
+
+        severity:
+          description: "失败严重程度（仅 fail 项）"
+          type: string
+          enum: [block, warning, info]
+          required: false
+          example: "block"
+
+  # === 失败项分析 ===
+  failures:
+    description: "失败项聚合（按失败原因分组）"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        failure_id:
+          description: "失败项 ID"
+          type: string
+          format: "FAIL-{verify_id}-{seq:03d}"
+          required: true
+          example: "FAIL-F22-VERIFY-001"
+
+        category:
+          description: "失败类别"
+          type: string
+          enum: [
+            missing_task,           # 需求没有对应 Task
+            missing_validation,     # AC 没有对应 Validation
+            missing_constraint_ref, # 约束没有被引用
+            broken_reference,       # 引用了不存在的 ID
+            validation_failed,      # 验证步骤执行失败
+            dod_unsatisfied         # 完成定义未满足
+          ]
+          required: true
+          example: "missing_task"
+
+        affected_ids:
+          description: "受影响的 ID 列表"
+          type: array
+          items:
+            type: string
+          required: true
+          example: ["REQ-NOT-002"]
+
+        impact:
+          description: "影响范围"
+          type: string
+          required: true
+          example: "1 个需求未被实现，影响功能 F22 核心邮件发送能力"
+
+        recommended_fix:
+          description: "建议修复方案"
+          type: string
+          required: true
+          example: |
+            使用 harness-order 为 REQ-NOT-002 生成新工单 F22-order-003，
+            或更新现有工单 F22-order-001 的 requirement_refs 增加 REQ-NOT-002
+
+        blocking:
+          description: "是否阻塞"
+          type: boolean
+          required: true
+          example: true
+
+  # === 修复建议 ===
+  recommendations:
+    description: "整体修复建议（汇总）"
+    type: array
+    required: false
+    items:
+      type: object
+      properties:
+        priority:
+          description: "优先级"
+          type: string
+          enum: [P0, P1, P2, P3]
+          required: true
+          example: "P0"
+
+        action:
+          description: "建议执行的动作"
+          type: string
+          required: true
+          example: "运行 harness-order 为 REQ-NOT-002 生成工单"
+
+        target_skill:
+          description: "目标 Skill"
+          type: string
+          required: false
+          example: "harness-order"
+
+        target_artifact:
+          description: "目标 Artifact"
+          type: string
+          required: false
+          example: "F22-specs"
+
+        estimated_effort:
+          description: "预估工作量"
+          type: string
+          enum: [xs, s, m, l, xl]
+          required: false
+          example: "s"
+
+  # === 验证上下文 ===
+  context:
+    description: "验证执行的上下文"
+    type: object
+    required: true
+    properties:
+      environment:
+        description: "验证环境信息"
+        type: object
+        properties:
+          runner:
+            description: "执行器"
+            type: string
+            example: "harness-verify"
+
+          version:
+            description: "Verify Schema 版本"
+            type: string
+            example: "v0.1-draft"
+
+          timestamp:
+            description: "执行时间"
+            type: string
+            format: "date-time"
+            example: "2026-06-24T18:00:00+08:00"
+
+      inputs:
+        description: "参与验证的 Artifact 列表"
+        type: array
+        items:
+          type: object
+          properties:
+            artifact_id:
+              type: string
+              example: "F22-specs"
+
+            artifact_type:
+              type: string
+              example: "spec"
+
+            version:
+              type: string
+              example: "1.0.0"
+
+      validation_status_map:
+        description: |
+          各 validation_step 的执行状态映射。
+          ⚠️ 此字段由 Verify Report 自身维护，不是 Task Schema 字段。
+          Task Schema v1.0-frozen 不包含 status 字段，
+          避免破坏 Frozen Schema，由 Verify Schema 引入运行时状态。
+        type: object
+        required: true
+        additionalProperties:
+          type: string
+          enum: [passed, failed, skipped, error]
+        example:
+          "VAL-F22-001-001": "passed"
+          "VAL-F22-001-002": "failed"
+          "VAL-F22-001-003": "skipped"
+        notes: |
+          key: task.validation_steps[].id（格式：VAL-{task_id}-{seq:03d}）
+          value: 执行状态（passed/failed/skipped/error）
+
+          由执行 Skill 填充：
+          - harness-verify：自动化测试结果
+          - harness-runtime-verify：运行时验证结果
+          - harness-review-loop：代码审查结果
+
+  # === 元评估 ===
+  meta_evaluation:
+    description: "对验证本身的元评估"
+    type: object
+    required: false
+    properties:
+      schema_compliance:
+        description: "被验证的 Artifact 是否符合 Schema"
+        type: boolean
+        example: true
+
+      reference_integrity:
+        description: "引用完整性是否通过"
+        type: boolean
+        example: true
+
+      verify_confidence:
+        description: "验证结果可信度（0-1）"
+        type: number
+        minimum: 0
+        maximum: 1
+        example: 0.95
+        notes: |
+          基于：
+          - Schema 合规性
+          - 引用完整性
+          - 检查项覆盖率
+          - 历史一致率
+```
+
+---
+
+## 验证规则引擎
+
+### 规则 V1：需求覆盖检查
+
+```yaml
+rule_id: V1
+name: requirement_covered
+description: 验证 Spec 中的每个需求是否被至少一个 Task 引用
+input:
+  spec.requirements[].id
+  all_tasks[*].requirement_refs[].requirement_id
+algorithm: |
+  for each req_id in spec.requirements:
+    if req_id not in any task.requirement_refs:
+      fail (missing_task)
+output: coverage.requirement_coverage
+```
+
+### 规则 V2：验收标准覆盖检查
+
+```yaml
+rule_id: V2
+name: acceptance_covered
+description: 验证 Spec 中的每个 AC 是否被至少一个 validation_steps 覆盖
+input:
+  spec.acceptance_criteria[].id              # 全局 AC（Spec Schema L382-416）
+  # 也可使用嵌套 AC：spec.requirements[].scenarios[].acceptance_criteria[]
+  all_tasks[*].validation_steps[].acceptance_criteria_ids[]
+algorithm: |
+  for each ac_id in spec.acceptance_criteria:
+    if ac_id not in any validation_steps.acceptance_criteria_ids:
+      fail (missing_validation)
+output: coverage.acceptance_coverage
+```
+
+### 规则 V3：约束引用检查
+
+```yaml
+rule_id: V3
+name: constraint_referenced
+description: 验证 Architecture 中的每个约束是否被至少一个 Task 引用
+input:
+  architecture.constraints[].id
+  all_tasks[*].constraints.constraint_refs[]
+algorithm: |
+  for each con_id in architecture.constraints:
+    if con_id not in any task.constraints.constraint_refs:
+      warn (missing_constraint_ref)
+output: coverage.constraint_coverage
+```
+
+### 规则 V4：引用完整性检查
+
+```yaml
+rule_id: V4
+name: reference_valid
+description: 验证所有引用的 ID 都指向已存在的对象
+input:
+  - task.requirement_refs[].requirement_id
+  - task.requirement_refs[].scenario_ids[]
+  - task.validation_steps[].acceptance_criteria_ids[]
+  - task.constraints.constraint_refs[]
+  - architecture.constraints[].related_requirements[]
+algorithm: |
+  for each ref_id in any reference field:
+    if ref_id not in target_artifact:
+      fail (broken_reference)
+output: checks[].status
+```
+
+### 规则 V5：DoD 满足检查
+
+```yaml
+rule_id: V5
+name: dod_satisfied
+description: 验证 Task.definition_of_done.criteria[].checked 是否全部为 true
+input:
+  task.definition_of_done.criteria[].checked
+algorithm: |
+  for each criterion in task.definition_of_done.criteria:
+    if not criterion.checked:
+      fail (dod_unsatisfied)
+output: failures[].category = dod_unsatisfied
+```
+
+### 规则 V6：验证步骤执行检查
+
+```yaml
+rule_id: V6
+name: validation_passed
+description: 验证所有 validation_steps 是否已执行且通过
+input:
+  all_tasks[*].validation_steps[].id
+  verify_report.context.validation_status_map  # 由 Verify Report 维护的运行时状态映射
+algorithm: |
+  for each task in tasks:
+    for step in task.validation_steps:
+      status = validation_status_map.get(step.id)
+      if status is None:
+        fail (validation_failed, "未执行")
+      elif status != "passed":
+        fail (validation_failed, status)
+output: coverage.validation_coverage
+notes: |
+  ⚠️ 注意：validation_status_map 由 Verify Report 维护，不是 Task Schema 字段。
+  Task Schema 不包含 status 字段，避免破坏 Frozen Schema。
+  由执行 Skill（harness-verify / harness-runtime-verify）填充该映射。
+```
+
+---
+
+## 与现有 Skill 的映射
+
+| Verify Schema 组件 | 现有 Skill | 现有 Skill 输出 | 升级方向 |
+|--------------------|-----------|-----------------|----------|
+| `verify-coverage` | harness-verify | 验证报告 | 改用 Verify Schema 输出 |
+| `verify-acceptance` | harness-verify | 验证报告 | 改用 Verify Schema 输出 |
+| `verify-constraint` | harness-review-loop | 代码审查报告 | 增加 constraint_coverage |
+| `verify-dod` | harness-runtime-verify | 运行时报告 | 改用 Verify Schema 输出 |
+| `coverage.*` | harness-analyze | 审计报告 | 复用四层覆盖率计算 |
+
+### 升级路径
+
+**Phase 2.5.1**：设计 Verify Schema（本文件）✅
+
+**Phase 2.5.2**：升级 harness-verify 输出 Verify Schema 格式
+
+**Phase 2.5.3**：升级 harness-runtime-verify 输出 Verify Schema 格式
+
+**Phase 2.5.4**：升级 harness-review-loop 增加 constraint_coverage
+
+**Phase 2.5.5**：升级 harness-analyze 复用覆盖率计算
+
+**Phase 2.5.6**：Verify Schema v1.0 冻结
+
+---
+
+## 示例：完整 Verify Report
+
+```yaml
+---
+artifact:
+  id: F22-verify-report-001
+  type: report
+  title: F22 通知推送系统验证报告
+  domain: notification
+  status: active
+  version: "1.0.0"
+  source:
+    skill: harness-verify
+    feature_id: F22
+    created: "2026-06-24T18:00:00+08:00"
+    updated: "2026-06-24T18:00:00+08:00"
+  dependencies:
+    - F22-specs
+    - F22-order-001
+    - F22-order-002
+    - notification-architecture
+---
+
+# F22 通知推送系统验证报告
+
+## 报告基本信息
+
+- **目标 Feature**：F22
+- **验证轮次**：第 1 轮
+- **生成时间**：2026-06-24T18:00:00+08:00
+
+## 验证结果汇总
+
+| 项目 | 数量 |
+|------|------|
+| 总检查项 | 25 |
+| 通过 | 22 |
+| 失败 | 2 |
+| 警告 | 1 |
+| **整体状态** | ⚠️ warning |
+
+## 覆盖度报告
+
+### 需求覆盖
+
+| 指标 | 值 |
+|------|----|
+| 总需求数 | 5 |
+| 已覆盖 | 4 |
+| 覆盖率 | 80% |
+| 未覆盖 | `REQ-NOT-002` |
+
+### 验收标准覆盖
+
+| 指标 | 值 |
+|------|----|
+| 总 AC 数 | 12 |
+| 已覆盖 | 10 |
+| 覆盖率 | 83.3% |
+| 未覆盖 | `AC-NOT-005`, `AC-NOT-012` |
+
+### 约束引用
+
+| 指标 | 值 |
+|------|----|
+| 总约束数 | 3 |
+| 已引用 | 3 |
+| 覆盖率 | 100% |
+
+### 验证步骤执行
+
+| 指标 | 值 |
+|------|----|
+| 总验证步骤 | 8 |
+| 已通过 | 8 |
+| 覆盖率 | 100% |
+
+## 失败项分析
+
+### FAIL-001：missing_task
+
+- **影响**：REQ-NOT-002（用户可以通过短信接收通知）
+- **影响范围**：1 个需求未被实现
+- **建议修复**：运行 `harness-order` 为 REQ-NOT-002 生成新工单
+- **阻塞**：是
+
+### FAIL-002：missing_validation
+
+- **影响**：AC-NOT-005, AC-NOT-012
+- **影响范围**：2 个 AC 未被验证步骤覆盖
+- **建议修复**：在 `F22-order-001.validation_steps` 中增加 validation 步骤，引用这些 AC
+- **阻塞**：是
+
+## 修复建议
+
+| 优先级 | 动作 | 目标 Skill |
+|--------|------|-----------|
+| P0 | 为 REQ-NOT-002 生成工单 | harness-order |
+| P0 | 增加 AC-NOT-005, AC-NOT-012 的 validation 步骤 | harness-execute |
+
+## 验证上下文
+
+- **执行器**：harness-verify v1.0
+- **Verify Schema 版本**：v0.1-draft
+- **输入 Artifact**：F22-specs (v1.0.0), F22-order-001 (v1.0.0), F22-order-002 (v1.0.0), notification-architecture (v1.0.0)
+
+## 元评估
+
+- **Schema 合规性**：✅ 通过
+- **引用完整性**：✅ 通过
+- **验证可信度**：95%
+```
+
+---
+
+## 与四层 Frozen Schema 的关系
+
+```
+Spec Schema v1.0-frozen
+    ↓ 提供 requirements[]/scenarios[]/acceptance_criteria[]
+Task Schema v1.0-frozen
+    ↓ 提供 requirement_refs[]/validation_steps[].acceptance_criteria_ids/constraints.constraint_refs[]
+Architecture Schema v1.0-frozen
+    ↓ 提供 constraints[]/related_requirements[]/related_modules[]
+    ↓
+Verify Schema v0.1-draft（本文件）
+    ├── 读取 Spec.requirements → 计算 Requirement Coverage
+    ├── 读取 Task.validation_steps.acceptance_criteria_ids → 计算 Acceptance Coverage
+    ├── 读取 Architecture.constraints + Task.constraints.constraint_refs → 计算 Constraint Coverage
+    ├── 读取 Task.validation_steps.status → 计算 Validation Coverage
+    └── 生成 Verify Report
+```
+
+**结论**：Verify Schema 完全建立在已冻结的四层 Schema 之上，不需要修改任何 Frozen Schema。
+
+---
+
+## 验证清单
+
+- [ ] coverage.requirement_coverage 计算正确
+- [ ] coverage.acceptance_coverage 计算正确
+- [ ] coverage.constraint_coverage 计算正确
+- [ ] coverage.validation_coverage 计算正确（依赖 context.validation_status_map）
+- [ ] context.validation_status_map 包含所有 task.validation_steps[].id
+- [ ] validation_status_map 每个 status 取值在 passed/failed/skipped/error 范围内
+- [ ] checks[].check_id 唯一
+- [ ] checks[].fix_path 可执行
+- [ ] failures[].blocking 准确标记
+- [ ] recommendations[].target_skill 指向具体 Skill
+
+## v0.2 修复说明
+
+本版本修复了 Chain Review v2.5 发现的 2 项问题：
+
+### 修复 1：V6 status 字段（关键）
+
+**问题**：V6 规则引用 `task.validation_steps[].status`，但 Task Schema v1.0-frozen 未定义该字段。
+
+**修复**：在 Verify Schema 的 `context` 中新增 `validation_status_map` 字段，由 Verify Report 维护运行时状态，避免修改 Frozen Schema。
+
+### 修复 2：V2 伪代码（轻微）
+
+**问题**：V2 伪代码使用 `spec.scenarios[]` 路径暗示场景是顶层数组，实际 Spec Schema 中场景嵌套在 `spec.requirements[].scenarios[]` 下。
+
+**修复**：V2 input 改为 `spec.acceptance_criteria[].id`（全局 AC 路径），注释中保留嵌套 AC 路径作为可选。
+
+### 兼容性影响
+
+- ✅ Task Schema 无任何修改
+- ✅ Spec Schema 无任何修改
+- ✅ Architecture Schema 无任何修改
+- ✅ Artifact Meta Schema 无任何修改
+- ✅ 仅 Verify Schema 自身增加字段（向后兼容）
+
+---
+
+## 下一步
+
+Phase 2.5 进度：
+
+- [x] **Phase 2.5.1**：Verify Schema v0.1-draft（初始设计）
+- [x] **Phase 2.5.2**：Artifact Chain Review v2.5（兼容性验证，发现 2 项问题）
+- [x] **Phase 2.5.3**：Verify Schema v0.2-draft（修复 V6 status 字段、澄清 V2 伪代码）
+- [x] **Phase 2.5.4**：升级 harness-verify 输出 Verify Schema 格式
+- [x] **Phase 2.5.5**：升级 harness-runtime-verify 输出 Verify Schema 格式
+- [x] **Phase 2.5.6**：升级 harness-review-loop 增加 constraint_coverage
+- [x] **Phase 2.5.7**：升级 harness-analyze 复用覆盖率计算
+- [x] **Phase 2.5.8**：Consumer Review（4 个消费者一致通过）
+- [x] **Phase 2.5.9**：Verify Schema v1.0 Frozen
+
+之后可进入 **Phase 3**：Context Engine（运行时能力建设）。
+
+---
+
+## 冻结字段与枚举词汇表（v1.0 Frozen Contract）
+
+> **生效日期**：2026-06-24
+> **权威定义位置**：本章节为以下字段和枚举的**唯一权威定义**。
+> **Consumer 一致性**：所有消费者 Skill（harness-verify / harness-runtime-verify / harness-review-loop / harness-analyze）必须使用本章节定义的字段名和枚举值。
+
+### 4.1 冻结字段命名
+
+下表为 v1.0 Frozen Contract 中**必须**使用的字段命名。修改字段名等同于 MAJOR 变更。
+
+| # | 字段路径 | 字段名 | 类型 | 适用范围 | 引入版本 |
+|---|---------|--------|------|---------|---------|
+| 1 | `coverage.requirement_coverage` | 需求覆盖率 | object | harness-verify / harness-analyze | v0.1 |
+| 2 | `coverage.acceptance_coverage` | 验收标准覆盖率 | object | harness-verify / harness-analyze | v0.1 |
+| 3 | `coverage.constraint_coverage` | 约束引用覆盖率 | object | harness-verify / harness-review-loop / harness-analyze | v0.1 |
+| 4 | `coverage.validation_coverage` | 验证步骤执行率 | object | harness-verify / harness-runtime-verify / harness-analyze | v0.1 |
+| 5 | `context.validation_status_map` | validation_step 执行状态映射 | object | harness-verify / harness-runtime-verify / harness-review-loop | v0.2 |
+| 6 | `verify_output_mode` | Verify 输出模式参数 | enum | harness-analyze | v1.0 |
+
+### 4.2 统一冻结枚举值
+
+#### 4.2.1 coverage 子字段枚举
+
+每个 coverage 对象必须包含：
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| `total_*` | integer | 总数（如 `total_requirements`、`total_criteria`、`total_constraints`、`total_validations`） |
+| `covered_*` / `referenced_*` / `passed_*` / `defined_*` | integer | 已覆盖/已引用/已通过/已定义数 |
+| `coverage_rate` | number (0-1) | 覆盖率（小数） |
+| `uncovered` / `unreferenced` | array of string | 未覆盖/未引用的 ID 列表 |
+
+> **注意**：`validation_coverage` 使用 `defined_validations` 和 `status_distribution`（而非 `passed_validations`），因为该字段为预检版，区分"已定义"与"已执行"。
+
+#### 4.2.2 `context.validation_status_map.value` 枚举
+
+`context.validation_status_map` 中每个 value 必须是以下 4 值之一：
+
+| 枚举值 | 含义 | 适用场景 |
+|--------|------|---------|
+| `passed` | 验证步骤执行通过 | 测试全部通过、命令退出码 0、lint 零警告 |
+| `failed` | 验证步骤执行失败 | 测试失败、命令非零退出码、断言失败 |
+| `skipped` | 验证步骤被跳过 | 前置条件未满足、依赖缺失、用户主动跳过 |
+| `error` | 验证步骤执行异常 | 工具本身故障、超时、配置错误 |
+
+**消费方**：
+
+- `harness-runtime-verify`：执行 lint/test/build 命令后填充
+- `harness-verify`：聚合多来源的 status_map
+- `harness-review-loop`：审查类步骤（如代码风格）的 status
+
+#### 4.2.3 `verify_output_mode` 枚举
+
+`harness-analyze` 的输出模式参数（v1.0 冻结）：
+
+| 枚举值 | 含义 | 输出 |
+|--------|------|------|
+| `dual` | 同时输出 YAML Schema + Markdown 报告 | 两者皆有（**默认**） |
+| `schema-only` | 仅输出 YAML Schema | 不生成 Markdown |
+| `markdown-only` | 仅输出 Markdown 报告 | 不生成 YAML Schema |
+
+**使用方式**：
+
+```yaml
+# Skill 调用时通过参数传递
+harness-analyze:
+  verify_output_mode: dual  # 或 schema-only / markdown-only
+```
+
+### 4.3 分维度词汇表策略
+
+> **冻结决策（2026-06-24）**：v1.0 采用"统一字段名 + 分维度词汇表"策略。**不强制统一枚举词汇表**，因为不同维度的语义不同。
+
+#### 4.3.1 架构约束严重度（`Architecture Constraint`）
+
+适用范围：`constraint_coverage.severity_distribution`
+
+| 枚举值 | 含义 | 阻断性 |
+|--------|------|--------|
+| `must` | 必须满足的硬约束 | 违反 = 阻塞 |
+| `should` | 推荐满足的软约束 | 违反 = 警告 |
+| `may` | 可选约束 | 违反 = 信息 |
+
+**使用方**：`harness-review-loop`、`harness-analyze`
+
+#### 4.3.2 运行时验证状态（`Runtime Verify`）
+
+适用范围：`context.validation_status_map.value`
+
+见 4.2.2，4 值枚举（passed / failed / skipped / error）。
+
+**使用方**：`harness-runtime-verify`、`harness-verify`
+
+#### 4.3.3 问题严重度（`Issue Severity`）
+
+适用范围：`checks[].severity`、`failures[].impact`
+
+| 枚举值 | 含义 | 是否阻塞 |
+|--------|------|---------|
+| `block` | 阻塞性问题，必须修复才能通过 | ✅ 是 |
+| `warning` | 警告问题，建议修复 | ❌ 否 |
+| `info` | 信息性问题，仅提示 | ❌ 否 |
+
+**使用方**：`harness-verify`
+
+#### 4.3.4 为什么允许分维度词汇表
+
+| 维度 | 词汇表 | 语义重点 |
+|------|--------|---------|
+| Architecture Constraint | `must / should / may` | 表达约束的强制级别 |
+| Runtime Verify | `passed / failed / skipped / error` | 表达执行结果状态 |
+| Issue Severity | `block / warning / info` | 表达问题对流程的影响 |
+
+如果强制统一为一个词汇表（如只用 `must/should/may`），将损失语义表达能力：
+
+- 运行时验证的 `passed` 无法用 `must` 表达（"必须"不是状态）
+- 问题严重度的 `block` 无法用 `must` 表达（"必须"是要求，不是状态）
+
+**冻结原则**：
+
+- ✅ **统一字段名**（如 `severity` 字段名统一）
+- ✅ **统一枚举定义位置**（本章节为权威）
+- ✅ **允许不同维度使用不同词汇表**
+
+### 4.4 Consumer 字段映射
+
+下表列出各 Consumer Skill 使用了哪些冻结字段：
+
+| Consumer Skill | 读取的字段 | 写入的字段 | 输出模式 |
+|---------------|-----------|-----------|---------|
+| **harness-verify** | coverage.* (四类) | context.validation_status_map、checks、failures、recommendations | yaml + md |
+| **harness-runtime-verify** | context.validation_status_map、validation_coverage | context.validation_status_map | yaml + md |
+| **harness-review-loop** | constraint_coverage.severity_distribution | constraint_coverage、issues | yaml + md |
+| **harness-analyze** | coverage.* (四类预检版) | coverage、audit_report | 按 verify_output_mode |
+
+### 4.5 Frozen Contract 修改策略
+
+修改本章节定义的字段名或枚举值，按以下规则升级版本：
+
+| 修改类型 | 示例 | 版本升级 |
+|---------|------|---------|
+| 增加新枚举值 | `severity` 新增 `critical` | MINOR（v1.1.0） |
+| 修改枚举值含义 | `passed` 从"通过"改为"通过+警告" | MAJOR（v2.0.0） |
+| 删除枚举值 | 移除 `skipped` | MAJOR（v2.0.0） |
+| 修改字段名 | `requirement_coverage` → `req_coverage` | MAJOR（v2.0.0） |
+| 增加新字段 | 新增 `coverage.coverage_trend` | MINOR（v1.1.0） |
+| 修改字段类型 | `coverage_rate` 从 number 改为 string | MAJOR（v2.0.0） |
+
+详细流程见 `templates/meta/schema-change-policy.md`。
