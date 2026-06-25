@@ -25,7 +25,7 @@
 
 | 文档 | 文件路径 | 状态 |
 |------|----------|------|
-| Artifact Chain Review | `templates/meta/artifact-chain-review.md` | v2.0 已批准 |
+| Artifact Chain Review | `docs/governance/artifact-chain-review.md` | v2.0 已批准 |
 | Schema Change Policy | `templates/meta/schema-change-policy.md` | v1.0 已发布 |
 
 ---

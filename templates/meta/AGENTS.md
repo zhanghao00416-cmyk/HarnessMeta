@@ -91,7 +91,7 @@ Phase 2 已于 2026-06-24 完成 Schema 冻结，Phase 2.5 已于 2026-06-24 完
 | Architecture Schema | `templates/meta/architecture-schema.yaml` | v1.0-frozen | Phase 2 |
 | **Verify Schema** | `templates/meta/verify-schema.yaml` | **v1.0-frozen** | **Phase 2.5** |
 
-详见 `templates/meta/phase2-freeze-declaration.md` 与 `templates/meta/phase2.5-freeze-declaration.md`。
+详见 `docs/governance/phase2-freeze-declaration.md` 与 `docs/governance/phase2.5-freeze-declaration.md`（harness-meta 仓库内，不复制到用户项目）。
 
 ### 严禁直接修改 Frozen Schema
 

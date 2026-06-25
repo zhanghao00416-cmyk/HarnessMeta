@@ -1057,7 +1057,7 @@ Phase 3 完成后，harness-meta 将具备：
 
 | 文档 | 位置 | 更新频率 |
 |------|------|---------|
-| Phase 3 启动文档 | `templates/meta/phase3-context-engine.md` | 仅设计阶段 |
+| Phase 3 启动文档 | `docs/governance/phase3-context-engine.md` | 仅设计阶段 |
 | Context Engine 文档 | `templates/runtime/context-engine.md` | 随 Phase 3.1 实施更新 |
 | Verify Runtime 文档 | `templates/runtime/verify-runtime.md` | 随 Phase 3.2 实施更新 |
 | Capability Discovery 文档 | `templates/runtime/capability-discovery.md` | 随 Phase 3.3 实施更新 |

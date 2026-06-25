@@ -19,7 +19,7 @@
 >   - 4 项字段命名冻结（coverage 四类、validation_status 四值、verify_output_mode 三值、severity_distribution 三值）
 >   - 引入分维度词汇表策略（架构约束 / 运行时 / 问题严重度各自词汇表）
 >   - Consumer Review 通过（4/4 一致）
->   - 详细冻结决策见 `templates/meta/phase2.5-freeze-declaration.md`
+>   - 详细冻结决策见 `docs/governance/phase2.5-freeze-declaration.md`
 > - v0.2-draft（2026-06-24）：修复 V6 status 字段引用问题（Chain Review v2.5 发现），改为维护 `context.validation_status_map`，澄清 V2 伪代码
 > - v0.1-draft（2026-06-24）：初始设计
 

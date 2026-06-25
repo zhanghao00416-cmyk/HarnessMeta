@@ -30,7 +30,7 @@
 
 | 文档 | 文件路径 | 状态 |
 |------|----------|------|
-| Verify Consumer Review | `templates/meta/verify-consumer-review.md` | v2.5 通过（4/4 一致） |
+| Verify Consumer Review | `docs/governance/verify-consumer-review.md` | v2.5 通过（4/4 一致） |
 | Schema Change Policy | `templates/meta/schema-change-policy.md` | v1.0（已扩展覆盖 Verify Schema） |
 
 ---

@@ -282,7 +282,7 @@ budget:
 
 将步骤 1-6 的结果组装为结构化上下文。
 
-**完整结构**（详见 `templates/meta/phase3-context-engine.md` §3.1）：
+**完整结构**（详见 `docs/governance/phase3-context-engine.md` §3.1）：
 
 ```yaml
 context_bundle:
@@ -482,5 +482,5 @@ context_bundle:
   - 引入 P2 Budget（优先级裁减 + resolve_trace 审计）
   - 输入简化为 task_id（单一入口）
   - 保留 context.md 人类可读版（v1.x 兼容）
-  - 详见 `templates/meta/phase3-context-engine.md`
+  - 详见 `docs/governance/phase3-context-engine.md`
 - **v1.0**：初始版本，手工指定 file_list 和约束
